@@ -17,7 +17,7 @@ const Navbar = () => {
               color: 'inherit',
             }}
           >
-            Product Reviews
+            Product 
           </Typography>
           <Button color="inherit" component={RouterLink} to="/">
             Home
