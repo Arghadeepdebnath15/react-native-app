@@ -6,17 +6,22 @@ require('dotenv').config();
 
 const app = express();
 
-// MongoDB connection
+// MongoDB connection with better error handling
 mongoose.connect('mongodb+srv://aarghadeepdebnath:Arghadeep15@cluster0.bpxus.mongodb.net/product_reviews?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => {
+  console.log('Successfully connected to MongoDB');
+})
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1); // Exit if cannot connect to database
+});
 
-// CORS configuration
+// CORS configuration with more detailed logging
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://arghadeep15.netlify.app'],
+  origin: ['http://localhost:3000', 'https://arghadeep15.netlify.app', 'https://react-native-app-f5dz.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true
@@ -26,10 +31,17 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Debug middleware
+// Enhanced debug middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('Origin:', req.headers.origin);
+  console.log('Headers:', req.headers);
   next();
+});
+
+// Basic health check route
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
 });
 
 // Routes

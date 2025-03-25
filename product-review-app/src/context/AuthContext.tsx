@@ -16,12 +16,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Make sure this matches your backend server URL
-const API_URL = 'http://localhost:5000/api';
+// Get API URL from environment variable or use default
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+// Add health check function
+const checkServerHealth = async () => {
+  try {
+    const response = await fetch(`${API_URL}/health`);
+    if (!response.ok) {
+      throw new Error('Server health check failed');
+    }
+    console.log('Server is healthy');
+    return true;
+  } catch (error) {
+    console.error('Server health check failed:', error);
+    return false;
+  }
+};
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isServerHealthy, setIsServerHealthy] = useState(false);
+
+  // Check server health on mount
+  useEffect(() => {
+    checkServerHealth().then(setIsServerHealthy);
+  }, []);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -41,6 +62,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (email: string, password: string) => {
+    if (!isServerHealthy) {
+      throw new Error('Server is not responding. Please try again later.');
+    }
+
     try {
       console.log('Attempting login to:', `${API_URL}/auth/login`);
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -71,6 +96,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const register = async (username: string, email: string, password: string) => {
+    if (!isServerHealthy) {
+      throw new Error('Server is not responding. Please try again later.');
+    }
+
     try {
       console.log('Attempting registration to:', `${API_URL}/auth/register`);
       const response = await fetch(`${API_URL}/auth/register`, {
