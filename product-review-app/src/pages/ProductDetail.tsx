@@ -20,7 +20,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { oppoReviews, averageRating } = useProductContext();
+  const { oppoReviews, averageRating, } = useProductContext();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -39,12 +39,70 @@ const ProductDetail = () => {
             name: 'OPPO Find X6 Pro',
             description: 'The OPPO Find X6 Pro is a flagship smartphone featuring a powerful camera system, stunning display, and premium build quality. With its innovative design and cutting-edge technology, it offers an exceptional mobile experience.',
             price: 999.99,
-            image: 'https://bbs.oppo.com/upload/image/front/thread/20221109/732870724/1195894509256048649/1195894509256048649.jpg?x-ocs-process=image/format,webp/resize,w_1584',
+            image: 'https://static1.anpoimages.com/wordpress/wp-content/uploads/2023/03/oppo-find-x6-pro-3.jpg?q=50&fit=crop&w=480&dpr=1.5',
             category: 'Smartphones',
             rating: averageRating || 0,
             reviews: oppoReviews || [],
           };
           setProduct(oppoProduct);
+        } else if (id === 'samsung-product') {
+          // Create the Samsung product
+          const samsungProduct: Product = {
+            _id: 'samsung-product',
+            name: 'Samsung Galaxy S24 Ultra',
+            description: 'The Samsung Galaxy S24 Ultra is a premium smartphone featuring a titanium frame, advanced AI capabilities, and a stunning display. With its innovative design and cutting-edge technology, it delivers an exceptional mobile experience.',
+            price: 1199.99,
+            image: 'https://images.samsung.com/in/smartphones/galaxy-s24-ultra/images/galaxy-s24-ultra-highlights-kv.jpg?imbypass=true',
+            category: 'Smartphones',
+            rating: 4.8,
+            reviews: [],
+          };
+
+          // Load reviews from localStorage
+          const savedReviews = localStorage.getItem('samsung-product-reviews');
+          if (savedReviews) {
+            try {
+              samsungProduct.reviews = JSON.parse(savedReviews);
+              // Calculate average rating from reviews
+              if (samsungProduct.reviews.length > 0) {
+                const sum = samsungProduct.reviews.reduce((acc, review) => acc + review.rating, 0);
+                samsungProduct.rating = sum / samsungProduct.reviews.length;
+              }
+            } catch (error) {
+              console.error('Error parsing saved Samsung reviews:', error);
+            }
+          }
+
+          setProduct(samsungProduct);
+        } else if (id === 'redmi-product') {
+          // Create the Redmi product
+          const redmiProduct: Product = {
+            _id: 'redmi-product',
+            name: 'Redmi Note 13 Pro',
+            description: 'The Redmi Note 13 Pro is a powerful smartphone featuring a high-performance processor, stunning display, and versatile camera system. With its sleek design and advanced features, it offers an exceptional mobile experience at an affordable price.',
+            price: 299.99,
+            image: 'https://i02.appmifile.com/266_operatorx_operatorx_uploadTiptapImage/26/10/2023/ff155b10a1fdb8177d05eb5fc282bde5.png',
+            category: 'Smartphones',
+            rating: 4.8,
+            reviews: [],
+          };
+
+          // Load reviews from localStorage
+          const savedReviews = localStorage.getItem('redmi-product-reviews');
+          if (savedReviews) {
+            try {
+              redmiProduct.reviews = JSON.parse(savedReviews);
+              // Calculate average rating from reviews
+              if (redmiProduct.reviews.length > 0) {
+                const sum = redmiProduct.reviews.reduce((acc, review) => acc + review.rating, 0);
+                redmiProduct.rating = sum / redmiProduct.reviews.length;
+              }
+            } catch (error) {
+              console.error('Error parsing saved Redmi reviews:', error);
+            }
+          }
+
+          setProduct(redmiProduct);
         } else {
           const data = await api.getProduct(id);
           setProduct(data);
@@ -56,6 +114,7 @@ const ProductDetail = () => {
         setLoading(false);
       }
     };
+    
 
     fetchProduct();
   }, [id, oppoReviews, averageRating]);

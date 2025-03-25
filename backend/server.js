@@ -1,15 +1,24 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const authRoutes = require('./routes/auth');
 require('dotenv').config();
 
 const app = express();
+
+// MongoDB connection
+mongoose.connect('mongodb+srv://aarghadeepdebnath:Arghadeep15@cluster0.bpxus.mongodb.net/product_reviews?retryWrites=true&w=majority&appName=Cluster0', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('MongoDB connection error:', err));
 
 // CORS configuration
 const corsOptions = {
   origin: ['http://localhost:3000', 'https://arghadeep15.netlify.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true
 };
 
@@ -17,10 +26,14 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Debug middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Product Schema
 const productSchema = new mongoose.Schema({

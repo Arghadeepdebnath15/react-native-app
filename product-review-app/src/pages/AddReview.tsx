@@ -41,6 +41,32 @@ const AddReview = () => {
               reviews: [],
             };
             setProduct(oppoProduct);
+          } else if (id === 'samsung-product') {
+            // Create the Samsung product
+            const samsungProduct: Product = {
+              _id: 'samsung-product',
+              name: 'Samsung Galaxy S24 Ultra',
+              description: 'The Samsung Galaxy S24 Ultra is a premium smartphone featuring a titanium frame, advanced AI capabilities, and a stunning display. With its innovative design and cutting-edge technology, it delivers an exceptional mobile experience.',
+              price: 1199.99,
+              image: 'https://images.samsung.com/in/smartphones/galaxy-s24-ultra/images/galaxy-s24-ultra-highlights-kv.jpg?imbypass=true',
+              category: 'Smartphones',
+              rating: 4.8,
+              reviews: [],
+            };
+            setProduct(samsungProduct);
+          } else if (id === 'redmi-product') {
+            // Create the Redmi product
+            const redmiProduct: Product = {
+              _id: 'redmi-product',
+              name: 'Redmi Note 13 Pro',
+              description: 'The Redmi Note 13 Pro is a powerful smartphone featuring a high-performance processor, stunning display, and versatile camera system. With its sleek design and advanced features, it offers an exceptional mobile experience at an affordable price.',
+              price: 299.99,
+              image: 'https://i02.appmifile.com/266_operatorx_operatorx_uploadTiptapImage/26/10/2023/ff155b10a1fdb8177d05eb5fc282bde5.png',
+              category: 'Smartphones',
+              rating: 4.8,
+              reviews: [],
+            };
+            setProduct(redmiProduct);
           } else {
             const data = await api.getProduct(id);
             setProduct(data);
@@ -69,6 +95,46 @@ const AddReview = () => {
           comment,
           userName,
         });
+      } else if (id === 'samsung-product') {
+        // For Samsung product, we'll use localStorage like OPPO
+        const newReview = {
+          id: Date.now().toString(),
+          productId: 'samsung-product',
+          rating,
+          comment,
+          userName,
+          date: new Date().toISOString(),
+        };
+        
+        // Get existing reviews from localStorage
+        const existingReviews = localStorage.getItem('samsung-product-reviews');
+        const reviews = existingReviews ? JSON.parse(existingReviews) : [];
+        
+        // Add new review
+        reviews.push(newReview);
+        
+        // Save back to localStorage
+        localStorage.setItem('samsung-product-reviews', JSON.stringify(reviews));
+      } else if (id === 'redmi-product') {
+        // For Redmi product, we'll use localStorage like Samsung
+        const newReview = {
+          id: Date.now().toString(),
+          productId: 'redmi-product',
+          rating,
+          comment,
+          userName,
+          date: new Date().toISOString(),
+        };
+        
+        // Get existing reviews from localStorage
+        const existingReviews = localStorage.getItem('redmi-product-reviews');
+        const reviews = existingReviews ? JSON.parse(existingReviews) : [];
+        
+        // Add new review
+        reviews.push(newReview);
+        
+        // Save back to localStorage
+        localStorage.setItem('redmi-product-reviews', JSON.stringify(reviews));
       } else {
         await api.addReview(id, {
           rating,
