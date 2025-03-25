@@ -7,7 +7,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: '*', // Allow all origins during development
+  origin: ['http://localhost:3000', 'https://your-netlify-domain.netlify.app'], // Update this with your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -20,7 +20,7 @@ app.use(express.json());
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
-  .catch((error) => console.error('MongoDB connection error:', error));
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Product Schema
 const productSchema = new mongoose.Schema({
@@ -108,8 +108,8 @@ app.post('/api/products/:id/reviews', async (req, res) => {
   }
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
-  console.log('CORS enabled for:', corsOptions.origin);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 }); 
