@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import AddReview from './pages/AddReview';
+import { ProductProvider } from './context/ProductContext';
 
 const theme = createTheme({
   palette: {
@@ -22,14 +23,16 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/review/:id" element={<AddReview />} />
-        </Routes>
-      </Router>
+      <ProductProvider>
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/review/:id" element={<AddReview />} />
+          </Routes>
+        </Router>
+      </ProductProvider>
     </ThemeProvider>
   );
 }

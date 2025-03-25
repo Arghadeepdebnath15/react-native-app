@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { Product } from '../types';
 import { api } from '../services/api';
+import { useProductContext } from '../context/ProductContext';
 
 const AddReview = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,13 +22,29 @@ const AddReview = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { addOppoReview } = useProductContext();
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         if (id) {
-          const data = await api.getProduct(id);
-          setProduct(data);
+          // Check if it's the OPPO product
+          if (id === 'oppo-product') {
+            const oppoProduct: Product = {
+              _id: 'oppo-product',
+              name: 'OPPO Find X6 Pro',
+              description: 'The OPPO Find X6 Pro is a flagship smartphone featuring a powerful camera system, stunning display, and premium build quality. With its innovative design and cutting-edge technology, it offers an exceptional mobile experience.',
+              price: 999.99,
+              image: 'https://bbs.oppo.com/upload/image/front/thread/20221109/732870724/1195894509256048649/1195894509256048649.jpg?x-ocs-process=image/format,webp/resize,w_1584',
+              category: 'Smartphones',
+              rating: 4.8,
+              reviews: [],
+            };
+            setProduct(oppoProduct);
+          } else {
+            const data = await api.getProduct(id);
+            setProduct(data);
+          }
         }
       } catch (err) {
         setError('Failed to fetch product details');
@@ -45,11 +62,20 @@ const AddReview = () => {
     if (!id || !rating || !comment || !userName) return;
 
     try {
-      await api.addReview(id, {
-        rating,
-        comment,
-        userName,
-      });
+      // For the OPPO product, use the context to add the review
+      if (id === 'oppo-product') {
+        addOppoReview({
+          rating,
+          comment,
+          userName,
+        });
+      } else {
+        await api.addReview(id, {
+          rating,
+          comment,
+          userName,
+        });
+      }
       navigate(`/product/${id}`);
     } catch (err) {
       setError('Failed to submit review');

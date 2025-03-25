@@ -13,12 +13,14 @@ import {
 } from '@mui/material';
 import { Product } from '../types';
 import { api } from '../services/api';
+import { useProductContext } from '../context/ProductContext';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { oppoReviews, averageRating } = useProductContext();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -29,8 +31,24 @@ const ProductDetail = () => {
       }
 
       try {
-        const data = await api.getProduct(id);
-        setProduct(data);
+        // Check if it's the OPPO product
+        if (id === 'oppo-product') {
+          // Create the OPPO product with the latest reviews from context
+          const oppoProduct: Product = {
+            _id: 'oppo-product',
+            name: 'OPPO Find X6 Pro',
+            description: 'The OPPO Find X6 Pro is a flagship smartphone featuring a powerful camera system, stunning display, and premium build quality. With its innovative design and cutting-edge technology, it offers an exceptional mobile experience.',
+            price: 999.99,
+            image: 'https://bbs.oppo.com/upload/image/front/thread/20221109/732870724/1195894509256048649/1195894509256048649.jpg?x-ocs-process=image/format,webp/resize,w_1584',
+            category: 'Smartphones',
+            rating: averageRating || 0,
+            reviews: oppoReviews || [],
+          };
+          setProduct(oppoProduct);
+        } else {
+          const data = await api.getProduct(id);
+          setProduct(data);
+        }
       } catch (err) {
         setError('Failed to fetch product details');
         console.error('Error fetching product:', err);
@@ -40,7 +58,7 @@ const ProductDetail = () => {
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id, oppoReviews, averageRating]);
 
   if (loading) {
     return (
