@@ -53,7 +53,7 @@ export const api = {
   // Get single product
   getProduct: async (id: string): Promise<Product> => {
     try {
-      const response = await axiosInstance.get(`/products/${id}`);
+      const response = await axiosInstance.get(`/api/products/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -68,7 +68,7 @@ export const api = {
     userName: string;
   }): Promise<Product> => {
     try {
-      const response = await axiosInstance.post(`/products/${productId}/reviews`, review);
+      const response = await axiosInstance.post(`/api/products/${productId}/reviews`, review);
       return response.data;
     } catch (error) {
       console.error('Error adding review:', error);
