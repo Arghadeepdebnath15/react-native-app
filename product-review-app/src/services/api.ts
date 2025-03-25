@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Product } from '../types';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 console.log('API URL:', API_URL); // Log the API URL being used
 
@@ -42,7 +42,7 @@ export const api = {
   // Get all products
   getProducts: async (): Promise<Product[]> => {
     try {
-      const response = await axiosInstance.get('/products');
+      const response = await axiosInstance.get('/api/products');
       return response.data;
     } catch (error) {
       console.error('Error fetching products:', error);
