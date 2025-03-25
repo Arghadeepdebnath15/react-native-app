@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface User {
-  id: string;
   username: string;
   email: string;
 }
@@ -16,123 +15,69 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Get API URL from environment variable or use default
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-// Add health check function
-const checkServerHealth = async () => {
-  try {
-    const response = await fetch(`${API_URL}/health`);
-    if (!response.ok) {
-      throw new Error('Server health check failed');
-    }
-    console.log('Server is healthy');
-    return true;
-  } catch (error) {
-    console.error('Server health check failed:', error);
-    return false;
-  }
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isServerHealthy, setIsServerHealthy] = useState(false);
-
-  // Check server health on mount
-  useEffect(() => {
-    checkServerHealth().then(setIsServerHealthy);
-  }, []);
 
   // Check for existing session on mount
   useEffect(() => {
-    const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Error parsing saved user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      setIsAuthenticated(true);
     }
   }, []);
 
   const login = async (email: string, password: string) => {
-    if (!isServerHealthy) {
-      throw new Error('Server is not responding. Please try again later.');
-    }
-
-    try {
-      console.log('Attempting login to:', `${API_URL}/auth/login`);
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const { token, user } = data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const user = registeredUsers.find((u: any) => u.email === email && u.password === password);
+    
+    if (user) {
+      const userData = {
+        username: user.username,
+        email: user.email,
+      };
+      setUser(userData);
       setIsAuthenticated(true);
-    } catch (error) {
-      console.error('Login error:', error);
-      throw new Error(error instanceof Error ? error.message : 'Login failed. Please check if the server is running.');
+      localStorage.setItem('user', JSON.stringify(userData));
+    } else {
+      throw new Error('Invalid credentials or user not registered');
     }
   };
 
   const register = async (username: string, email: string, password: string) => {
-    if (!isServerHealthy) {
-      throw new Error('Server is not responding. Please try again later.');
+    if (!username || !email || !password) {
+      throw new Error('All fields are required');
     }
 
-    try {
-      console.log('Attempting registration to:', `${API_URL}/auth/register`);
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const { token, user } = data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw new Error(error instanceof Error ? error.message : 'Registration failed. Please check if the server is running.');
+    // Get existing registered users
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    
+    // Check if user already exists
+    const existingUser = registeredUsers.find((user: any) => user.email === email);
+    if (existingUser) {
+      throw new Error(`Email ${email} is already registered. Please use a different email or login.`);
     }
+
+    // Add new user to registered users
+    const newUser = { username, email, password };
+    registeredUsers.push(newUser);
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+
+    // Auto login after registration
+    const userData = {
+      username,
+      email,
+    };
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
