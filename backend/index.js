@@ -44,7 +44,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 // CORS config with proper origins for production
 const corsOptions = {
   origin: isProduction 
-    ? ['https://product-review-site.netlify.app'] 
+    ? ['https://argha15.netlify.app', 'https://product-review-site.netlify.app'] 
     : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -65,6 +65,8 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/products', productRoutes);
+// Also expose directly at /products for compatibility
+app.use('/products', productRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
