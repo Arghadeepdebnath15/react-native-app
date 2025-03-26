@@ -15,12 +15,6 @@ const ProductCard = ({ product }) => {
     return stars;
   };
 
-  // Handle view details click
-  const handleViewDetails = (e) => {
-    // This ensures the link works correctly
-    console.log("Navigating to product details:", product._id);
-  };
-
   return (
     <div className="product-card">
       <img src={product.imageUrl} alt={product.name} className="product-image" />
@@ -36,11 +30,7 @@ const ProductCard = ({ product }) => {
             ? `${product.description.substring(0, 100)}...`
             : product.description}
         </p>
-        <Link 
-          to={`/product/${product._id}`} 
-          className="view-btn"
-          onClick={handleViewDetails}
-        >
+        <Link to={`/product/${product._id}`} className="view-btn">
           View Details
         </Link>
       </div>
