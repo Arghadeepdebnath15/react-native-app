@@ -30,10 +30,34 @@ html, body, #root {
 /* Allow page reloading */
 html.reloading {
   scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
+  -webkit-overflow-scrolling: auto !important;
 }
 
-/* Media queries to adjust container padding for mobile */
+/* Mobile-specific fixes */
+html.mobile-device {
+  /* Better scrolling performance on mobile */
+  scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
+  /* Ensure momentum scrolling still works */
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Mobile-specific fixes for containers */
+html.mobile-device .container,
+html.mobile-device .products-grid,
+html.mobile-device .review-list {
+  scroll-snap-type: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* Fix for mobile reloading */
 @media (max-width: 768px) {
+  html, body {
+    scroll-behavior: auto !important;
+    scroll-snap-type: none !important;
+  }
+  
   .container {
     margin-top: 0 !important;
     padding-top: 50px !important;

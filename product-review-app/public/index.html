@@ -32,27 +32,110 @@
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" as="style" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" />
     
-    <!-- Fix reload issues -->
+    <!-- Fix reload issues, with enhanced mobile support -->
     <script>
-      // Handle page reload
+      // Mobile detection
+      var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Apply mobile-specific fixes immediately
+      if (isMobile) {
+        // Disable scroll behavior on mobile devices to prevent reload issues
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.documentElement.style.scrollSnapType = 'none';
+        
+        // Add reload-specific class for mobile
+        document.documentElement.classList.add('mobile-device');
+      }
+      
+      // Handle page reload for all devices
       window.addEventListener('beforeunload', function() {
         document.documentElement.classList.add('reloading');
-        sessionStorage.setItem('scrollPosition', window.scrollY);
+        
+        // Store scroll position
+        try {
+          sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+          
+          if (isMobile) {
+            // Store additional data for mobile devices
+            sessionStorage.setItem('isMobileReload', 'true');
+            // Force scroll behavior reset for mobile
+            document.documentElement.style.scrollBehavior = 'auto';
+            document.documentElement.style.scrollSnapType = 'none';
+            document.body.style.scrollBehavior = 'auto';
+          }
+        } catch (e) {
+          console.error('Error storing scroll position:', e);
+        }
       });
+      
+      // Special handling for mobile page visibility changes
+      if (isMobile) {
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible') {
+            // When the page becomes visible again (like after refresh)
+            document.documentElement.classList.add('reloading');
+            setTimeout(function() {
+              document.documentElement.classList.remove('reloading');
+            }, 1000);
+          }
+        });
+      }
       
       // Restore scroll position after reload
       document.addEventListener('DOMContentLoaded', function() {
+        // Try to determine if this is a reload
+        var isMobileReload = sessionStorage.getItem('isMobileReload') === 'true';
         var scrollPosition = sessionStorage.getItem('scrollPosition');
-        if (scrollPosition) {
-          window.scrollTo(0, parseInt(scrollPosition));
-          sessionStorage.removeItem('scrollPosition');
-        }
         
-        // Remove reloading class after a short delay
-        setTimeout(function() {
-          document.documentElement.classList.remove('reloading');
-        }, 500);
+        if (scrollPosition) {
+          // Clear storage immediately to prevent issues with multiple restores
+          sessionStorage.removeItem('scrollPosition');
+          sessionStorage.removeItem('isMobileReload');
+          
+          // Use a small delay to ensure the page is fully loaded before scrolling
+          setTimeout(function() {
+            window.scrollTo(0, parseInt(scrollPosition));
+            
+            // For mobile, keep the reloading class a bit longer
+            if (isMobile || isMobileReload) {
+              setTimeout(function() {
+                document.documentElement.classList.remove('reloading');
+                // Re-enable smooth scrolling after reload is complete
+                if (!isMobile) { // Keep disabled on mobile for better performance
+                  document.documentElement.style.scrollBehavior = 'smooth';
+                  document.documentElement.style.scrollSnapType = 'y proximity';
+                }
+              }, 1000);
+            } else {
+              // For desktop, shorter delay
+              setTimeout(function() {
+                document.documentElement.classList.remove('reloading');
+              }, 500);
+            }
+          }, isMobile ? 300 : 0);
+        } else {
+          // If no scroll position (not a reload), just remove the class
+          setTimeout(function() {
+            document.documentElement.classList.remove('reloading');
+          }, 500);
+        }
       });
+      
+      // Add double-tap reload hack for iOS
+      if (isMobile) {
+        var lastTap = 0;
+        document.addEventListener('touchend', function(e) {
+          var currentTime = new Date().getTime();
+          var tapLength = currentTime - lastTap;
+          if (tapLength < 500 && tapLength > 0) {
+            // Double tap detected, force reload behavior
+            document.documentElement.classList.add('reloading');
+            document.documentElement.style.scrollBehavior = 'auto';
+            document.documentElement.style.scrollSnapType = 'none';
+          }
+          lastTap = currentTime;
+        });
+      }
     </script>
     
     <!-- Prevent FOUC (Flash of Unstyled Content) -->
@@ -76,6 +159,16 @@
       /* Fix reload issues */
       html.reloading {
         scroll-behavior: auto !important;
+        scroll-snap-type: none !important;
+        -webkit-overflow-scrolling: auto !important;
+      }
+      
+      /* Mobile-specific fixes */
+      html.mobile-device {
+        /* Optimize for mobile */
+        scroll-behavior: auto !important;
+        scroll-snap-type: none !important;
+        -webkit-overflow-scrolling: touch !important;
       }
     </style>
     

@@ -1,7 +1,14 @@
-/* Global smooth scrolling */
+/* Global smooth scrolling - only for desktop */
+@media (min-width: 769px) {
+  html {
+    /* Use conditional smooth scrolling to allow reloads */
+    scroll-behavior: smooth;
+    scroll-snap-type: y proximity;
+  }
+}
+
+/* Base styles for all devices */
 html {
-  /* Use conditional smooth scrolling to allow reloads */
-  scroll-behavior: smooth;
   /* Enable hardware acceleration for better performance */
   -webkit-transform: translateZ(0);
   -moz-transform: translateZ(0);
@@ -14,8 +21,6 @@ html {
   /* Prevent content shifting and layout reflows */
   overflow-x: hidden;
   width: 100%;
-  /* Add smooth scroll stopping with scroll snap */
-  scroll-snap-type: y proximity;
   height: 100%;
   /* Force removal of any margin or padding */
   margin: 0 !important;
@@ -25,6 +30,12 @@ html {
 /* Special case for page reload */
 html.reloading, 
 html.reloading * {
+  scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
+}
+
+/* Mobile devices get auto scroll behavior instead of smooth */
+html.mobile-device {
   scroll-behavior: auto !important;
   scroll-snap-type: none !important;
 }
@@ -48,16 +59,37 @@ body {
   position: relative;
 }
 
-/* Snap points for scroll stopping */
-section, .product-card, .review-card, .product-detail, footer {
-  scroll-snap-align: start;
-  scroll-margin-top: 60px;
+/* Snap points for scroll stopping - only for desktop */
+@media (min-width: 769px) {
+  section, .product-card, .review-card, .product-detail, footer {
+    scroll-snap-align: start;
+    scroll-margin-top: 60px;
+  }
+
+  /* Add smooth deceleration for scroll stop */
+  .container, .products-grid, .review-list {
+    scroll-snap-type: y proximity;
+    scroll-behavior: smooth;
+  }
 }
 
-/* Add smooth deceleration for scroll stop */
-.container, .products-grid, .review-list {
-  scroll-snap-type: y proximity;
-  scroll-behavior: smooth;
+/* Mobile-specific overrides */
+@media (max-width: 768px) {
+  html, body {
+    /* Default to auto scroll behavior for mobile */
+    scroll-behavior: auto !important;
+    scroll-snap-type: none !important;
+  }
+  
+  /* Disable snap points on mobile */
+  section, .product-card, .review-card, .product-detail, footer {
+    scroll-snap-align: none;
+  }
+  
+  .container, .products-grid, .review-list {
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+  }
 }
 
 /* Improve performance for large lists */
