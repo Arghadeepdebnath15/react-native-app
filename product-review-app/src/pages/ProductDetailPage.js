@@ -12,7 +12,6 @@ const ProductDetailPage = () => {
   const [submitError, setSubmitError] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const reviewFormRef = useRef(null);
-  const productDetailRef = useRef(null);
 
   // Scroll to top when component mounts
   useEffect(() => {
