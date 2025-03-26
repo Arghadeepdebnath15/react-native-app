@@ -45,9 +45,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 const corsOptions = {
   origin: [
     'https://product-review-site.netlify.app',
+    'https://argha15.netlify.app',  // Add your actual Netlify domain
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://192.168.0.103:3000'  // Add your local IP
+    'http://192.168.0.103:3000'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],

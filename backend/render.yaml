@@ -11,3 +11,5 @@ services:
         value: production
       - key: MONGO_URI
         sync: false
+      - key: CORS_ORIGIN
+        value: https://argha15.netlify.app
