@@ -27,6 +27,7 @@ html {
   padding: 0 !important;
   /* Enable pull-to-refresh */
   overscroll-behavior-y: contain;
+  scroll-padding-top: 90px; /* Increased from 70px to account for taller navbar */
 }
 
 /* Special case for page reload */
@@ -72,7 +73,7 @@ body {
 @media (min-width: 769px) {
   section, .product-card, .review-card, .product-detail, footer {
     scroll-snap-align: start;
-    scroll-margin-top: 60px;
+    scroll-margin-top: 90px; /* Increased from 60px to account for taller navbar */
   }
 
   /* Add smooth deceleration for scroll stop */
@@ -96,11 +97,18 @@ body {
   /* Disable snap points on mobile */
   section, .product-card, .review-card, .product-detail, footer {
     scroll-snap-align: none;
+    scroll-margin-top: 80px; /* Added for mobile */
   }
   
   .container, .products-grid, .review-list {
     scroll-snap-type: none;
     scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  section, .product-card, .review-card, .product-detail, footer {
+    scroll-margin-top: 70px; /* Added for very small screens */
   }
 }
 
