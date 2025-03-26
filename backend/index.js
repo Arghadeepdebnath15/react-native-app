@@ -37,15 +37,18 @@ const getLocalIpAddress = () => {
 };
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080; // Use PORT from environment or default to 8080 instead of fixed 5000
 const localIp = getLocalIpAddress();
 const isProduction = process.env.NODE_ENV === 'production';
 
 // CORS config with proper origins for production
 const corsOptions = {
-  origin: isProduction 
-    ? ['https://argha15.netlify.app', 'https://product-review-site.netlify.app'] 
-    : '*',
+  origin: [
+    'https://product-review-site.netlify.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://192.168.0.103:3000'  // Add your local IP
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -93,7 +96,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
     console.log(`Port ${PORT} is already in use. Closing previous instance...`);
-    console.log('Please manually close the application using port 5000 or change the PORT in .env');
+    console.log(`Please manually close the application using port ${PORT} or change the PORT in .env`);
     process.exit(1);
   } else {
     console.error('Server error:', error);

@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "nodemon --delay 500ms index.js",
     "seed": "node --tls-min-v1.0 seed.js",
     "find-ip": "node findIP.js",
     "add-product": "node add-product.js",

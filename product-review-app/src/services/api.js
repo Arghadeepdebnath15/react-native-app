@@ -2,26 +2,14 @@ import axios from 'axios';
 
 // Determine API URL based on environment
 const getApiUrl = () => {
-  // First check for production environment variable
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
+  if (process.env.NODE_ENV === 'production') {
+    // In production, use the production URL
+    return process.env.REACT_APP_API_URL || 'https://newrepo-pk31.onrender.com/api';
+  } else {
+    // In development, use the local backend
+    const currentHostname = window.location.hostname;
+    return `http://${currentHostname}:8080/api`;
   }
-  
-  // For Netlify deployment with Render backend
-  if (window.location.hostname.includes('netlify')) {
-    return 'https://newrepo-pk31.onrender.com/api';
-  }
-  
-  // Get current hostname for development environment
-  const currentHostname = window.location.hostname;
-  
-  // Use the same host for API calls, but with port 5000
-  if (currentHostname !== 'localhost') {
-    return `http://${currentHostname}:5000/api`;
-  }
-  
-  // Default for localhost development
-  return 'http://localhost:5000/api';
 };
 
 // Log the API URL being used
