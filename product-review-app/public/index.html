@@ -32,6 +32,29 @@
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" as="style" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" />
     
+    <!-- Fix reload issues -->
+    <script>
+      // Handle page reload
+      window.addEventListener('beforeunload', function() {
+        document.documentElement.classList.add('reloading');
+        sessionStorage.setItem('scrollPosition', window.scrollY);
+      });
+      
+      // Restore scroll position after reload
+      document.addEventListener('DOMContentLoaded', function() {
+        var scrollPosition = sessionStorage.getItem('scrollPosition');
+        if (scrollPosition) {
+          window.scrollTo(0, parseInt(scrollPosition));
+          sessionStorage.removeItem('scrollPosition');
+        }
+        
+        // Remove reloading class after a short delay
+        setTimeout(function() {
+          document.documentElement.classList.remove('reloading');
+        }, 500);
+      });
+    </script>
+    
     <!-- Prevent FOUC (Flash of Unstyled Content) -->
     <style>
       body {
@@ -48,6 +71,11 @@
         flex-direction: column;
         min-height: 100vh;
         color: #333;
+      }
+      
+      /* Fix reload issues */
+      html.reloading {
+        scroll-behavior: auto !important;
       }
     </style>
     

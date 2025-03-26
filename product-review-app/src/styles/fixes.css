@@ -2,6 +2,8 @@
 html, body, #root {
   margin: 0 !important;
   padding: 0 !important;
+  /* Make scrolling behavior conditional to allow reloads */
+  transition: scroll-behavior 0.3s !important;
 }
 
 /* Override any potential conflicting styles */
@@ -23,6 +25,11 @@ html, body, #root {
   min-height: auto !important;
   height: auto !important;
   flex: 1 0 auto !important; /* Grow but don't shrink, respect content height */
+}
+
+/* Allow page reloading */
+html.reloading {
+  scroll-behavior: auto !important;
 }
 
 /* Media queries to adjust container padding for mobile */

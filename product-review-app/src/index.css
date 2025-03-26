@@ -1,5 +1,6 @@
 /* Global smooth scrolling */
 html {
+  /* Use conditional smooth scrolling to allow reloads */
   scroll-behavior: smooth;
   /* Enable hardware acceleration for better performance */
   -webkit-transform: translateZ(0);
@@ -19,6 +20,13 @@ html {
   /* Force removal of any margin or padding */
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Special case for page reload */
+html.reloading, 
+html.reloading * {
+  scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
 }
 
 body {

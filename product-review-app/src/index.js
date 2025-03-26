@@ -52,41 +52,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
   }
   
-  // Add smooth scroll stopping behavior
-  let isScrolling;
-  window.addEventListener('scroll', function() {
-    // Clear our timeout throughout the scroll
-    window.clearTimeout(isScrolling);
+  // Enable smooth reloading
+  window.addEventListener('beforeunload', () => {
+    // Remove scroll behavior temporarily to enable smooth reloading
+    document.documentElement.style.scrollBehavior = 'auto';
+    document.body.style.scrollBehavior = 'auto';
     
-    // Set a timeout to run after scrolling ends
-    isScrolling = setTimeout(function() {
-      // Smooth snap to nearest element when scrolling stops
-      const scrollables = document.querySelectorAll('.product-card, .review-card, section, .product-detail');
-      if (scrollables.length > 0) {
-        let closest = null;
-        let closestDistance = Infinity;
-        const scrollPosition = window.scrollY + 70; // Adjust for header
-        
-        scrollables.forEach(element => {
-          const elementTop = element.getBoundingClientRect().top + window.scrollY;
-          const distance = Math.abs(elementTop - scrollPosition);
-          
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closest = element;
-          }
-        });
-        
-        // Only snap if we're not too far away (prevents snapping when scrolling quickly)
-        if (closest && closestDistance < 100) {
-          const elementTop = closest.getBoundingClientRect().top + window.scrollY;
-          window.scrollTo({
-            top: elementTop - 70, // Adjust for header
-            behavior: 'smooth'
-          });
-        }
-      }
-    }, 66); // Adjust timing for optimal experience
+    // Reset scroll position on reload
+    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+  });
+  
+  // Restore scroll position after reloading
+  const savedPosition = sessionStorage.getItem('scrollPosition');
+  if (savedPosition) {
+    window.scrollTo(0, parseInt(savedPosition, 10));
+    sessionStorage.removeItem('scrollPosition');
+  }
+  
+  // Simplify scroll stopping to prevent reload issues
+  let scrollTimeout;
+  window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    
+    scrollTimeout = setTimeout(function() {
+      // Do minimal work on scroll stop to avoid breaking reload
+    }, 66);
   }, wheelOpt);
 });
 
