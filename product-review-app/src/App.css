@@ -37,7 +37,7 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   background-color: #f8f9fa;
-  color: #841a1a;
+  color: #302a2a;
   /* Prevent horizontal scrolling */
   overflow-x: hidden;
   width: 100%;
@@ -112,7 +112,7 @@ html {
 }
 
 .nav-logo {
-  color: white;
+  color: rgb(99, 200, 62);
   font-size: 1.6rem;
   font-weight: bold;
   text-decoration: none;

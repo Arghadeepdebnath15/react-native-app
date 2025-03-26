@@ -1,147 +1,92 @@
-/* Critical position fixes */
+/* Basic layout fixes */
 html, body, #root {
-  margin: 0 !important;
-  padding: 0 !important;
-  /* Enable pull-to-refresh while disabling other fancy scrolling */
-  scroll-behavior: auto !important;
-  scroll-snap-type: none !important;
-  /* Allow overscroll for pull-to-refresh */
-  overscroll-behavior-y: contain !important;
-  /* Enable smooth touch scrolling */
-  -webkit-overflow-scrolling: touch !important;
-  /* Ensure proper height calculation */
-  height: 100% !important;
-  min-height: 100% !important;
-  /* Use viewport height variable for mobile */
-  min-height: calc(var(--vh, 1vh) * 100) !important;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  min-height: 100%;
+  /* Enable pull-to-refresh */
+  overscroll-behavior-y: auto;
 }
 
 /* Mobile-specific fixes */
 html.mobile-device {
+  position: static;
+  overflow: auto;
+  -webkit-tap-highlight-color: transparent;
   /* Enable pull-to-refresh */
-  overscroll-behavior-y: contain !important;
-  /* Additional mobile overrides */
-  position: static !important;
-  overflow: auto !important;
-  -webkit-tap-highlight-color: transparent !important;
-  touch-action: manipulation !important;
+  overscroll-behavior-y: auto;
+  touch-action: pan-x pan-y;
 }
 
 html.mobile-device body {
-  /* Mobile body fixes */
-  position: static !important;
-  overflow: auto !important;
-  min-height: calc(var(--vh, 1vh) * 100) !important;
-  width: 100% !important;
-  -webkit-overflow-scrolling: touch !important;
+  position: static;
+  overflow: auto;
+  min-height: 100%;
+  width: 100%;
   /* Enable pull-to-refresh */
-  overscroll-behavior-y: contain !important;
+  overscroll-behavior-y: auto;
 }
 
-/* Override any potential conflicting styles */
+/* Navbar fixes */
 .main-nav {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  z-index: 1000 !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  box-sizing: border-box !important;
-  /* Prevent nav from causing scroll issues */
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  margin-top: 0;
+  padding-top: 0;
+  box-sizing: border-box;
 }
 
-/* Ensure content doesn't overlap the navbar and only takes required space */
+/* Container layout */
 .container {
-  margin-top: 0 !important;
-  padding-top: 60px !important;
-  min-height: auto !important;
-  height: auto !important;
-  flex: 1 0 auto !important;
-  /* Prevent container from causing scroll issues */
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-  /* Ensure proper width */
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+  margin-top: 0;
+  padding-top: 60px;
+  min-height: auto;
+  height: auto;
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-/* Always allow reloading by disabling fancy scroll */
-html, body, .container, .products-grid, .review-list {
-  scroll-behavior: auto !important;
-  scroll-snap-type: none !important;
-  /* Enable pull-to-refresh */
-  overscroll-behavior-y: contain !important;
-}
-
-/* Disable snapping completely */
-section, .product-card, .review-card, .product-detail, footer {
-  scroll-snap-align: none !important;
-}
-
-/* Fix for mobile reloading */
+/* Mobile adjustments */
 @media (max-width: 768px) {
   html.mobile-device, 
   html.mobile-device body {
-    /* Additional mobile fixes */
-    position: static !important;
-    overflow: auto !important;
-    height: calc(var(--vh, 1vh) * 100) !important;
-    min-height: calc(var(--vh, 1vh) * 100) !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    position: static;
+    overflow: auto;
+    height: 100%;
+    min-height: 100%;
+    width: 100%;
+    max-width: 100%;
     /* Enable pull-to-refresh */
-    overscroll-behavior-y: contain !important;
-    /* Improve touch handling */
-    touch-action: manipulation !important;
-    -webkit-tap-highlight-color: transparent !important;
+    overscroll-behavior-y: auto;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
   }
   
   .container {
-    margin-top: 0 !important;
-    padding-top: 50px !important;
-    /* Enable pull-to-refresh */
-    overscroll-behavior-y: contain !important;
-  }
-  
-  /* Prevent fixed position issues */
-  .main-nav {
-    transform: translateZ(0) !important;
-    -webkit-transform: translateZ(0) !important;
-    /* Ensure smooth rendering */
-    will-change: transform !important;
+    margin-top: 0;
+    padding-top: 50px;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    margin-top: 0 !important;
-    padding-top: 45px !important;
+    margin-top: 0;
+    padding-top: 45px;
   }
 }
 
-/* Fix App layout */
+/* App container */
 .App {
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 100vh !important;
-  min-height: calc(var(--vh, 1vh) * 100) !important;
-  width: 100% !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
   /* Enable pull-to-refresh */
-  overscroll-behavior-y: contain !important;
-  /* Prevent overflow issues */
-  overflow-x: hidden !important;
-  position: relative !important;
-  /* Improve performance */
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
+  overscroll-behavior-y: auto;
 } 

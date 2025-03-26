@@ -39,10 +39,6 @@ const Navbar = () => {
                  onClick={() => handleButtonClick('cat')}>
             {isMobile ? 'C' : 'Cat'}
           </button>
-          <button className={`nav-button ${activeButton === 'help' ? 'active' : ''}`}
-                 onClick={() => handleButtonClick('help')}>
-            {isMobile ? 'H' : 'Help'}
-          </button>
         </div>
       </div>
     </nav>
