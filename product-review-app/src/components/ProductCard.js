@@ -1,7 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
+
   // Generate star rating display
   const renderStars = (rating) => {
     const stars = [];
@@ -13,6 +15,18 @@ const ProductCard = ({ product }) => {
       );
     }
     return stars;
+  };
+
+  // Handle navigation with scroll
+  const handleViewDetails = (e) => {
+    e.preventDefault();
+    navigate(`/product/${product._id}`);
+    
+    // Reset scroll position
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant'
+    });
   };
 
   return (
@@ -30,7 +44,7 @@ const ProductCard = ({ product }) => {
             ? `${product.description.substring(0, 100)}...`
             : product.description}
         </p>
-        <Link to={`/product/${product._id}`} className="view-btn">
+        <Link to={`/product/${product._id}`} className="view-btn" onClick={handleViewDetails}>
           View Details
         </Link>
       </div>

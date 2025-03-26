@@ -12,6 +12,25 @@ const ProductDetailPage = () => {
   const [submitError, setSubmitError] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const reviewFormRef = useRef(null);
+  const productDetailRef = useRef(null);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant'
+    });
+    
+    // Add a slight delay to ensure navbar height is accounted for
+    setTimeout(() => {
+      const navbarHeight = 64; // Fixed navbar height in pixels
+      const yOffset = -navbarHeight - 10; // Additional 10px padding
+      window.scrollTo({
+        top: yOffset,
+        behavior: 'smooth'
+      });
+    }, 100);
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {

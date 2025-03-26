@@ -9,7 +9,7 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   background-color: #f8f9fa;
-  color: #333;
+  color: #841a1a;
   overflow-y: scroll; /* Prevent layout shifts from scrollbar appearing/disappearing */
 }
 
@@ -18,6 +18,7 @@ body {
   margin: 0 auto;
   padding: 0 20px;
   min-height: calc(100vh - 140px); /* Account for header and footer to prevent jumps */
+  margin-top: 64px; /* Add this to create space for the fixed navbar */
 }
 
 /* Loading Spinner */
@@ -26,7 +27,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 500px;
+  min-height: 2200px;
   text-align: center;
 }
 
@@ -63,15 +64,29 @@ body {
 nav {
   background-color: #343a40;
   color: #fff;
-  padding: 1rem 0;
-  height: 64px; /* Fixed height to prevent layout shifts */
+  padding: 0;
+  height: 64px; /* Fixed height */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  border-bottom: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  overflow: visible; /* Changed from hidden to visible */
 }
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
+  height: 64px; /* Explicit height */
+  width: 100%;
+  padding: 0 20px; /* Move padding to navbar instead of nav */
+  max-width: 1200px; /* Match container max-width */
+  margin: 0 auto; /* Center the navbar */
 }
 
 .navbar-brand {
@@ -79,6 +94,62 @@ nav {
   font-weight: bold;
   color: #fff;
   text-decoration: none;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Show ellipsis if text is too long */
+  max-width: 50%; /* Limit width on small screens */
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
+  line-height: 1; /* Tighten line height */
+}
+
+/* Navbar Buttons */
+.navbar-buttons {
+  display: flex;
+  gap: 8px; /* Reduce gap slightly */
+  height: 100%;
+  align-items: center;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  overflow: visible; /* Changed from hidden to visible */
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
+}
+
+.nav-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  padding: 5px 10px; /* Further reduce padding */
+  cursor: pointer;
+  font-size: 0.85rem; /* Smaller font */
+  transition: all 0.2s ease;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  height: 30px; /* Reduce height further */
+  display: inline-flex; /* Changed to inline-flex */
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  min-width: 0; /* Allow buttons to shrink */
+  margin: 0 2px; /* Add small horizontal margin */
+  vertical-align: middle; /* Ensure vertical alignment */
+  line-height: 1; /* Reduce line height */
+}
+
+.nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.nav-btn:active {
+  transform: translateY(0);
+}
+
+.nav-btn-active {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: white;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 /* Products Grid */
@@ -181,6 +252,7 @@ nav {
 .product-detail-container {
   padding-top: 2rem;
   min-height: 70vh;
+  scroll-margin-top: 80px; /* Add scroll margin to account for fixed navbar */
 }
 
 .product-detail {
@@ -262,6 +334,7 @@ input, textarea, select {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-family: inherit;
+  appearance: none; /* Standard property */
   -webkit-appearance: none; /* Fix for iOS rendering */
   font-size: 16px; /* Prevent zoom on iOS */
   margin-bottom: 10px;
@@ -276,6 +349,7 @@ input, textarea, select {
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.3s;
+  appearance: none; /* Standard property */
   -webkit-appearance: none; /* Fix for iOS rendering */
   -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight */
   touch-action: manipulation; /* Improve touch response */
@@ -386,17 +460,14 @@ footer {
 /* Improve touch targets on mobile */
 @media (max-width: 768px) {
   .submit-btn {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.1rem;
-    margin: 15px 0;
+    padding: 10px 15px;
+    font-size: 0.9rem;
   }
   
   input, 
   textarea, 
   select {
-    padding: 12px;
-    margin-bottom: 15px;
+    padding: 10px;
   }
   
   .form-group {
@@ -404,7 +475,57 @@ footer {
   }
   
   .review-form {
-    padding: 20px;
+    padding: 15px;
+  }
+
+  /* Responsive navbar styles */
+  nav {
+    position: fixed;
+    height: 56px; /* Slightly reduced height for mobile */
+    min-height: 0; /* Remove min-height */
+    padding: 0;
+  }
+  
+  .container {
+    margin-top: 56px; /* Match the navbar height */
+  }
+
+  .navbar {
+    padding: 0 10px; /* Reduce padding on mobile */
+    height: 56px; /* Match the nav height */
+  }
+
+  .navbar-brand {
+    font-size: 1.1rem; /* Smaller font */
+    max-width: 40%; /* Reduce max width */
+  }
+
+  .navbar-buttons {
+    gap: 4px; /* Reduce gap further */
+    overflow-x: auto; /* Allow horizontal scrolling if needed */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    max-width: 60%; /* Limit width */
+    padding-right: 5px; /* Add padding to prevent cutting off */
+  }
+
+  .nav-btn {
+    padding: 3px 7px; /* Smaller padding */
+    font-size: 0.8rem; /* Smaller font */
+    height: 26px; /* Smaller height */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Smaller shadow */
+  }
+
+  /* Reviews header with button styling */
+  .reviews-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .write-review-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1.1rem;
   }
 }
 
@@ -474,6 +595,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  appearance: none; /* Add standard property */
   -webkit-appearance: none; /* Fix for iOS rendering */
   -webkit-tap-highlight-color: rgba(0,0,0,0); /* Remove tap highlight */
   touch-action: manipulation; /* Improve touch response */
@@ -528,5 +650,55 @@ footer {
     width: 100%;
     padding: 0.75rem;
     font-size: 1.1rem;
+  }
+}
+
+html {
+  scroll-padding-top: 70px; /* Add scroll padding to the whole document */
+}
+
+/* Star Rating System */
+.star-rating-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  user-select: none;
+}
+
+.star-rating-input {
+  font-size: 2rem;
+  cursor: pointer;
+  color: #e4e5e9;
+  transition: color 0.2s ease, transform 0.1s ease;
+  margin-right: 5px;
+}
+
+.star-filled {
+  color: #ffc107;
+}
+
+.star-empty {
+  color: #e4e5e9;
+}
+
+.star-rating-input:hover {
+  transform: scale(1.1);
+}
+
+.rating-text {
+  margin-left: 10px;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* Mobile improvements for star rating */
+@media (max-width: 768px) {
+  .star-rating-container {
+    padding: 8px 0;
+  }
+  
+  .star-rating-input {
+    font-size: 2.2rem; /* Larger touch targets on mobile */
+    margin-right: 8px;
   }
 }

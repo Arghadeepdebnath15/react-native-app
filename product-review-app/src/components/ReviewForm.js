@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 const ReviewForm = ({ onSubmitReview, productName = '' }) => {
   const [formData, setFormData] = useState({
     userName: '',
-    rating: 5,
+    rating: null,
     comment: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hoveredRating, setHoveredRating] = useState(0);
 
   // Special handling for problematic products
   const isProblematicProduct = productName && 
@@ -27,8 +28,29 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
     });
   };
 
+  const handleRatingChange = (newRating) => {
+    setFormData({
+      ...formData,
+      rating: newRating
+    });
+  };
+
+  const handleRatingHover = (hoveredValue) => {
+    setHoveredRating(hoveredValue);
+  };
+
+  const handleRatingLeave = () => {
+    setHoveredRating(0);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if rating is selected
+    if (rating === null) {
+      alert('Please select a rating before submitting your review');
+      return;
+    }
     
     // Prevent multiple submissions
     if (isSubmitting) return;
@@ -53,7 +75,7 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
       // Reset form after submission
       setFormData({
         userName: '',
-        rating: 5,
+        rating: null,
         comment: ''
       });
       
@@ -65,6 +87,28 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Star rating component
+  const renderStarRating = () => {
+    const stars = [];
+    const activeRating = hoveredRating || rating || 0;
+    
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span 
+          key={i} 
+          className={`star-rating-input ${i <= activeRating ? 'star-filled' : 'star-empty'}`}
+          onClick={() => handleRatingChange(i)}
+          onMouseEnter={() => handleRatingHover(i)}
+          onMouseLeave={handleRatingLeave}
+        >
+          ★
+        </span>
+      );
+    }
+    
+    return stars;
   };
 
   return (
@@ -86,19 +130,12 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
         </div>
         <div className="form-group">
           <label htmlFor="rating">Rating</label>
-          <select
-            id="rating"
-            name="rating"
-            value={rating}
-            onChange={handleChange}
-            required
-          >
-            <option value="5">5 Stars</option>
-            <option value="4">4 Stars</option>
-            <option value="3">3 Stars</option>
-            <option value="2">2 Stars</option>
-            <option value="1">1 Star</option>
-          </select>
+          <div className="star-rating-container">
+            {renderStarRating()}
+            <span className="rating-text">
+              {rating ? `(${rating} ${rating === 1 ? 'Star' : 'Stars'})` : '(Select a rating)'}
+            </span>
+          </div>
         </div>
         <div className="form-group">
           <label htmlFor="comment">Your Review</label>
