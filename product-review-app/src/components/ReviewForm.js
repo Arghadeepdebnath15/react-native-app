@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// Test comment to verify GitHub sync is working
 
 const ReviewForm = ({ onSubmitReview, productName = '' }) => {
   const [formData, setFormData] = useState({
