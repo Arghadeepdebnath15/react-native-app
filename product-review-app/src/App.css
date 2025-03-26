@@ -9,7 +9,7 @@
 #root {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden !important;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -19,7 +19,7 @@ body {
   background-color: #f8f9fa;
   color: #841a1a;
   overflow-y: scroll; /* Prevent layout shifts from scrollbar appearing/disappearing */
-  overflow-x: hidden !important; /* Prevent horizontal scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   width: 100%;
   position: relative;
   max-width: 100vw;
@@ -27,25 +27,9 @@ body {
 
 html {
   scroll-padding-top: 70px; /* Add scroll padding to the whole document */
-  overflow-x: hidden !important; /* Prevent horizontal scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   width: 100%;
   max-width: 100%;
-}
-
-/* Extra strict mobile constraints */
-@media (max-width: 768px) {
-  body, html, #root {
-    overflow-x: hidden !important;
-    position: relative;
-    width: 100% !important;
-    max-width: 100vw !important;
-    touch-action: pan-y !important; /* Restrict touch actions to vertical only */
-  }
-  
-  * {
-    max-width: 100vw !important;
-    box-sizing: border-box !important;
-  }
 }
 
 .container {
@@ -136,27 +120,16 @@ html {
 @media (max-width: 768px) {
   .main-nav {
     height: 50px;
-    overflow: hidden !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    overflow: hidden;
   }
   
   .container {
     margin-top: 50px;
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 10px !important;
-    overflow-x: hidden !important;
   }
   
   .nav-container {
-    padding: 0 10px !important;
-    overflow: hidden !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    padding: 0 10px;
+    overflow: hidden;
   }
   
   .nav-logo {
@@ -167,73 +140,45 @@ html {
   .nav-items {
     gap: 4px;
     max-width: 65%;
-    overflow: hidden !important;
   }
   
   .nav-button {
     padding: 4px 8px;
     font-size: 0.8rem;
     min-width: 32px;
-    overflow: hidden !important;
   }
 }
 
 /* Very small screens */
 @media (max-width: 480px) {
   .main-nav {
-    height: 45px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
+    height: 45px;
   }
   
   .container {
-    margin-top: 45px !important;
-    padding: 0 8px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
+    margin-top: 45px;
   }
   
   .nav-container {
-    padding: 0 5px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
+    padding: 0 5px;
   }
   
   .nav-logo {
     font-size: 0.9rem;
     max-width: 30%;
-    overflow: hidden !important;
   }
   
   .nav-items {
     gap: 2px;
     max-width: 70%;
-    overflow: hidden !important;
   }
   
   .nav-button {
-    padding: 3px 5px !important;
-    font-size: 0.7rem !important;
-    min-width: 20px !important;
-    max-width: 28px !important;
-    width: auto !important;
-    overflow: hidden !important;
-  }
-  
-  /* Ensure product detail also fits */
-  .product-detail-container,
-  .product-detail,
-  .product-detail-info,
-  .product-detail-title,
-  .product-detail-description {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-wrap: break-word !important;
-    word-wrap: break-word !important;
-    overflow-x: hidden !important;
+    padding: 3px 6px;
+    font-size: 0.75rem;
+    min-width: 22px; /* Even smaller min-width */
+    max-width: 30px; /* Add max-width constraint */
+    width: auto; /* Allow proper sizing */
   }
 }
 
@@ -289,45 +234,10 @@ html {
   max-width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .products-grid {
-    grid-template-columns: 1fr; /* Single column on mobile */
-    width: 100%;
-    margin: 1rem 0;
+    grid-template-columns: 1fr; /* Single column on very small screens */
     gap: 1rem;
-    padding: 0;
-  }
-  
-  .product-card {
-    width: 100%;
-    margin: 0;
-  }
-  
-  .product-image {
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .product-info {
-    padding: 0.8rem;
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .product-title, 
-  .product-price, 
-  .product-description,
-  .rating {
-    width: 100%;
-    max-width: 100%;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-  }
-  
-  .view-btn {
-    width: 100%;
-    margin: 0;
-    padding: 0.5rem;
   }
 }
 
