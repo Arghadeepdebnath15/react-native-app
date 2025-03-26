@@ -28,8 +28,8 @@ body {
   line-height: 1.6;
   background-color: #f8f9fa;
   color: #841a1a;
-  overflow-y: scroll; /* Prevent layout shifts from scrollbar appearing/disappearing */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
   width: 100%;
   position: relative;
   max-width: 100vw;

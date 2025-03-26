@@ -25,17 +25,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Optimize for smooth scrolling */
-  overflow-y: scroll;
-  /* Use passive listeners for scroll events */
-  -webkit-overflow-scrolling: touch;
   /* Prevent content jumping */
   overflow-x: hidden;
   /* Ensure content doesn't cause horizontal scrolling */
   width: 100%;
   /* Add momentum-based scrolling for iOS devices */
   -webkit-overflow-scrolling: touch;
-  height: 100%;
+  min-height: 100%;
 }
 
 /* Snap points for scroll stopping */
