@@ -7,7 +7,7 @@ import reportWebVitals from './reportWebVitals';
 // Improve scroll performance with passive scroll listeners
 document.addEventListener('DOMContentLoaded', () => {
   // Use passive event listeners for touch and wheel events
-  const supportsPassive = false;
+  let supportsPassive = false;
   try {
     const opts = Object.defineProperty({}, 'passive', {
       get: function() {
