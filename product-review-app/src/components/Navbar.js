@@ -1,8 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [activeButton, setActiveButton] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if the device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Initial check
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   const handleButtonClick = (buttonName) => {
     setActiveButton(buttonName);
@@ -21,25 +40,25 @@ const Navbar = () => {
             className={`nav-btn ${activeButton === 'new' ? 'nav-btn-active' : ''}`}
             onClick={() => handleButtonClick('new')}
           >
-            New
+            {isMobile ? 'New' : 'New'}
           </button>
           <button 
             className={`nav-btn ${activeButton === 'popular' ? 'nav-btn-active' : ''}`}
             onClick={() => handleButtonClick('popular')}
           >
-            Popular
+            {isMobile ? 'Pop.' : 'Popular'}
           </button>
           <button 
             className={`nav-btn ${activeButton === 'categories' ? 'nav-btn-active' : ''}`}
             onClick={() => handleButtonClick('categories')}
           >
-            Categories
+            {isMobile ? 'Cat.' : 'Categories'}
           </button>
           <button 
             className={`nav-btn ${activeButton === 'contact' ? 'nav-btn-active' : ''}`}
             onClick={() => handleButtonClick('contact')}
           >
-            Contact
+            {isMobile ? 'Contact' : 'Contact'}
           </button>
         </div>
       </div>

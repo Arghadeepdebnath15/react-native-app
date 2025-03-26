@@ -481,38 +481,70 @@ footer {
   /* Responsive navbar styles */
   nav {
     position: fixed;
-    height: 56px; /* Slightly reduced height for mobile */
-    min-height: 0; /* Remove min-height */
+    height: 60px; /* Slightly increase height for mobile */
+    min-height: 0;
     padding: 0;
+    overflow: visible;
   }
   
   .container {
-    margin-top: 56px; /* Match the navbar height */
+    margin-top: 60px; /* Match the navbar height */
   }
 
   .navbar {
-    padding: 0 10px; /* Reduce padding on mobile */
-    height: 56px; /* Match the nav height */
+    padding: 0 10px;
+    height: 60px; /* Match the nav height */
+    align-items: center;
+    justify-content: space-between;
   }
 
   .navbar-brand {
-    font-size: 1.1rem; /* Smaller font */
-    max-width: 40%; /* Reduce max width */
+    font-size: 1rem; /* Smaller font */
+    max-width: 35%; /* Reduce max width to give more space to buttons */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .navbar-buttons {
-    gap: 4px; /* Reduce gap further */
-    overflow-x: auto; /* Allow horizontal scrolling if needed */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    max-width: 60%; /* Limit width */
-    padding-right: 5px; /* Add padding to prevent cutting off */
+    display: flex;
+    gap: 4px;
+    max-width: 65%; /* Give more space to buttons */
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    padding: 0;
   }
 
   .nav-btn {
-    padding: 3px 7px; /* Smaller padding */
-    font-size: 0.8rem; /* Smaller font */
-    height: 26px; /* Smaller height */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Smaller shadow */
+    padding: 2px 6px; /* Smaller padding */
+    font-size: 0.75rem; /* Smaller font */
+    height: 28px; /* Smaller height but still large enough for touch */
+    border-width: 1px;
+    box-shadow: none; /* Remove shadow on mobile */
+    margin: 0 1px; /* Smaller margin */
+    max-width: 70px; /* Limit width of each button */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-tap-highlight-color: transparent; /* Remove default mobile tap highlight */
+    touch-action: manipulation; /* Better touch handling */
+  }
+  
+  .nav-btn:active {
+    background-color: rgba(255, 255, 255, 0.3); /* Better visual feedback on tap */
+    transform: scale(0.95); /* Subtle press effect */
+    transition: transform 0.1s, background-color 0.1s;
+  }
+  
+  .nav-btn-active {
+    background-color: rgba(255, 255, 255, 0.4); /* Brighter active state for mobile */
+    border-color: white;
+  }
+  
+  /* Prevent text selection in navbar */
+  .navbar, .navbar * {
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   /* Reviews header with button styling */
