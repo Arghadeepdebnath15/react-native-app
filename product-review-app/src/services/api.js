@@ -119,4 +119,15 @@ export const addReview = async (productId, reviewData) => {
   }
 };
 
+export const addProduct = async (productData) => {
+  try {
+    console.log('Adding new product:', productData);
+    const response = await api.post('/products', productData);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding product:', error);
+    throw error;
+  }
+};
+
 export default api; 

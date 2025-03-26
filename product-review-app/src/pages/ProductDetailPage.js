@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
+import { getImageUrl } from '../utils/imageUtils';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -103,6 +104,31 @@ const ProductDetailPage = () => {
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      const imageUrl = getImageUrl(product.imageUrl);
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      
+      // Extract filename from URL or use product name
+      const filename = product.imageUrl.split('/').pop() || `${product.name.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+      link.download = filename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      alert('Failed to download image. Please try again.');
+    }
+  };
+
   // Generate star rating display
   const renderStars = (rating) => {
     const stars = [];
@@ -145,17 +171,38 @@ const ProductDetailPage = () => {
     <div className="container product-detail-container">
       <div className="product-detail">
         <div className="product-detail-image-container">
-          <img src={product.imageUrl} alt={product.name} className="product-detail-image" />
+          <img 
+            src={getImageUrl(product.imageUrl)} 
+            alt={product.name} 
+            className="product-detail-image"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = '/placeholder-image.png';
+            }}
+          />
+          <button 
+            className="download-button"
+            onClick={handleDownload}
+            title="Download image"
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+          </button>
         </div>
         <div className="product-detail-info">
           <h1 className="product-detail-title">{product.name}</h1>
+          <p className="product-detail-price">${product.price.toFixed(2)}</p>
           <div className="rating">
             {renderStars(Math.round(product.avgRating))}
-            <span> ({product.reviews.length} reviews)</span>
+            <span>({product.reviews.length} reviews)</span>
           </div>
-          <p className="product-detail-price">${product.price.toFixed(2)}</p>
           <p className="product-detail-description">{product.description}</p>
-          <p><strong>Category:</strong> {product.category}</p>
+          <div style={{ textAlign: 'center' }}>
+            <span className="category-tag">
+              {product.category}
+            </span>
+          </div>
         </div>
       </div>
 

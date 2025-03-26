@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUtils';
+import '../styles/ProductCard.css';
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
@@ -33,7 +35,15 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className="product-card">
-      <img src={product.imageUrl} alt={product.name} className="product-image" />
+      <img 
+        src={getImageUrl(product.imageUrl)} 
+        alt={product.name} 
+        className="product-image"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/placeholder-image.png'; // You can add a placeholder image
+        }}
+      />
       <div className="product-info">
         <h3 className="product-title">{product.name}</h3>
         <p className="product-price">${product.price.toFixed(2)}</p>
@@ -46,12 +56,14 @@ const ProductCard = ({ product }) => {
             ? `${product.description.substring(0, 100)}...`
             : product.description}
         </p>
-        <button 
-          onClick={handleViewDetails}
-          className="view-btn"
-        >
-          View Details
-        </button>
+        <div className="product-actions">
+          <button 
+            onClick={handleViewDetails}
+            className="view-btn"
+          >
+            View Details
+          </button>
+        </div>
       </div>
     </div>
   );

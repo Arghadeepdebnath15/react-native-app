@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/AddProduct.css'; // Import the existing styles
 
-const Navbar = () => {
-  const [activeButton, setActiveButton] = useState(null);
+const Navbar = ({ onAddProductClick }) => {
   const [isMobile, setIsMobile] = useState(false);
 
   // Check if device is mobile
@@ -16,10 +16,6 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleButtonClick = (buttonName) => {
-    setActiveButton(buttonName);
-  };
-
   return (
     <nav className="main-nav">
       <div className="nav-container">
@@ -27,17 +23,11 @@ const Navbar = () => {
           {isMobile ? 'PR' : 'Product Reviews'}
         </Link>
         <div className="nav-items">
-          <button className={`nav-button ${activeButton === 'new' ? 'active' : ''}`}
-                 onClick={() => handleButtonClick('new')}>
-            {isMobile ? 'N' : 'New'}
-          </button>
-          <button className={`nav-button ${activeButton === 'popular' ? 'active' : ''}`}
-                 onClick={() => handleButtonClick('popular')}>
-            {isMobile ? 'P' : 'Popular'}
-          </button>
-          <button className={`nav-button ${activeButton === 'cat' ? 'active' : ''}`}
-                 onClick={() => handleButtonClick('cat')}>
-            {isMobile ? 'C' : 'Cat'}
+          <button 
+            className="toggle-form-button"
+            onClick={onAddProductClick}
+          >
+            {isMobile ? '+' : 'Add New Product'}
           </button>
         </div>
       </div>

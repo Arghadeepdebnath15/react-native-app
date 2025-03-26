@@ -9,21 +9,27 @@ export const ProductProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Function to fetch products
+  const getProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchProducts();
+      setProducts(data);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch products when component mounts
   useEffect(() => {
-    const getProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProducts();
-        setProducts(data);
-      } catch (err) {
-        setError(err.message || 'Failed to fetch products');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     getProducts();
+  }, []);
+
+  // Refresh products function
+  const refreshProducts = useCallback(async () => {
+    await getProducts();
   }, []);
 
   // Get a single product by ID using useCallback to prevent unnecessary re-renders
@@ -75,8 +81,9 @@ export const ProductProvider = ({ children }) => {
     loading,
     error,
     getProduct,
-    submitReview
-  }), [products, loading, error, getProduct, submitReview]);
+    submitReview,
+    refreshProducts
+  }), [products, loading, error, getProduct, submitReview, refreshProducts]);
 
   return (
     <ProductContext.Provider value={value}>

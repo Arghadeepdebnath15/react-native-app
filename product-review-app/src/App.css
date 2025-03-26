@@ -159,6 +159,26 @@ html {
   border-color: white;
 }
 
+.nav-button.add-product-button {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.nav-button.add-product-button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* Mobile Navbar */
 @media (max-width: 768px) {
   .main-nav {
@@ -189,6 +209,15 @@ html {
     font-size: 0.9rem; /* Increased from 0.8rem */
     min-width: 36px; /* Increased from 32px */
   }
+  
+  .nav-button.add-product-button {
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 24px;
+    border-radius: 50%;
+  }
 }
 
 /* Very small screens */
@@ -216,6 +245,13 @@ html {
   }
   
   .nav-button {
+    padding: 4px 8px;
+    font-size: 0.85rem; /* Increased from 0.75rem */
+    min-width: 28px; /* Increased from 22px */
+    max-width: 36px; /* Increased from 30px */
+  }
+  
+  .nav-button.add-product-button {
     padding: 4px 8px;
     font-size: 0.85rem; /* Increased from 0.75rem */
     min-width: 28px; /* Increased from 22px */
