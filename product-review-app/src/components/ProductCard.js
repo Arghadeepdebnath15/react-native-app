@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
@@ -19,14 +19,16 @@ const ProductCard = ({ product }) => {
 
   // Handle navigation with scroll
   const handleViewDetails = (e) => {
-    e.preventDefault();
-    navigate(`/product/${product._id}`);
+    if (e) {
+      e.preventDefault();
+    }
+
+    // Set a flag in sessionStorage to indicate we're navigating to product details
+    sessionStorage.setItem('scrollToTop', 'true');
+    sessionStorage.setItem('productId', product._id);
     
-    // Reset scroll position
-    window.scrollTo({
-      top: 0,
-      behavior: 'instant'
-    });
+    // Navigate to the product page
+    navigate(`/product/${product._id}`);
   };
 
   return (
@@ -44,9 +46,12 @@ const ProductCard = ({ product }) => {
             ? `${product.description.substring(0, 100)}...`
             : product.description}
         </p>
-        <Link to={`/product/${product._id}`} className="view-btn" onClick={handleViewDetails}>
+        <button 
+          onClick={handleViewDetails}
+          className="view-btn"
+        >
           View Details
-        </Link>
+        </button>
       </div>
     </div>
   );

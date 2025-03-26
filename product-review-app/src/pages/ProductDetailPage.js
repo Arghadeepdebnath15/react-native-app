@@ -12,38 +12,48 @@ const ProductDetailPage = () => {
   const [submitError, setSubmitError] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const reviewFormRef = useRef(null);
+  const shouldScrollToTop = useRef(sessionStorage.getItem('scrollToTop') === 'true');
 
-  // Scroll to top when component mounts
+  // Handle scroll behavior
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'instant'
-    });
-    
-    // Add a slight delay to ensure navbar height is accounted for
-    setTimeout(() => {
-      const navbarHeight = 64; // Fixed navbar height in pixels
-      const yOffset = -navbarHeight - 10; // Additional 10px padding
-      window.scrollTo({
-        top: yOffset,
-        behavior: 'smooth'
-      });
-    }, 100);
-  }, []);
+    const forceScrollToTop = () => {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+    };
+
+    if (shouldScrollToTop.current) {
+      // Clear the flag immediately
+      sessionStorage.removeItem('scrollToTop');
+      shouldScrollToTop.current = false;
+
+      // Force scroll in multiple ways
+      forceScrollToTop();
+      
+      // Also scroll after a small delay to ensure it works
+      setTimeout(forceScrollToTop, 0);
+      setTimeout(forceScrollToTop, 100);
+      
+      // And on the next animation frame
+      requestAnimationFrame(forceScrollToTop);
+    }
+  }, [id, product]);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        console.log('Fetching product with URL ID:', id);
         const data = await getProduct(id);
-        console.log('Fetched product:', data);
-        console.log('Product ID type:', typeof data._id);
         setProduct(data);
+
+        // If this is the product we navigated to, ensure we're at the top
+        if (sessionStorage.getItem('productId') === id) {
+          sessionStorage.removeItem('productId');
+          window.scrollTo(0, 0);
+        }
       } catch (err) {
         console.error('Error fetching product:', err);
       } finally {
-        // Ensure loading is set to false even if there's an error
         setLoading(false);
       }
     };
@@ -57,48 +67,22 @@ const ProductDetailPage = () => {
       setSubmitError(null);
       
       if (!product || !product._id) {
-        const errorMsg = 'Cannot submit review - product data is invalid';
-        console.error(errorMsg, product);
-        setSubmitError(errorMsg);
-        setLoading(false);
-        throw new Error(errorMsg);
+        throw new Error('Cannot submit review - product data is invalid');
       }
       
-      // Log detailed product information for debugging
-      console.log('Product before review submission:', product);
-      console.log('Product name:', product.name);
-      console.log('Product ID:', product._id);
-      console.log('Product ID type:', typeof product._id);
+      const updatedProduct = await submitReview(product._id, reviewData);
       
-      // For problematic products, try extra safeguards
-      let productId = product._id;
-      
-      console.log('Submitting review for product:', productId);
-      
-      const updatedProduct = await submitReview(productId, reviewData);
-      
-      // Check if we got a valid response
       if (!updatedProduct || !updatedProduct._id) {
         throw new Error('Received invalid product data from server');
       }
       
-      console.log('Updated product after review:', updatedProduct);
-      
-      // Update the local product state with the new data
       setProduct(updatedProduct);
-
-      // Hide the review form after successful submission
       setShowReviewForm(false);
       
       // Scroll to review list after submission
-      setTimeout(() => {
-        if (reviewFormRef.current) {
-          window.scrollTo({
-            top: reviewFormRef.current.offsetTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 500);
+      if (reviewFormRef.current) {
+        reviewFormRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
       
       return updatedProduct;
     } catch (err) {
@@ -111,16 +95,11 @@ const ProductDetailPage = () => {
   };
 
   const toggleReviewForm = () => {
-    console.log('Toggle review form clicked. Current state:', showReviewForm);
     setShowReviewForm(prevState => !prevState);
     
     // If opening the form, scroll to it
-    if (!showReviewForm) {
-      setTimeout(() => {
-        if (reviewFormRef.current) {
-          reviewFormRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+    if (!showReviewForm && reviewFormRef.current) {
+      reviewFormRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -162,9 +141,6 @@ const ProductDetailPage = () => {
     );
   }
 
-  // Log product information on each render for debugging
-  console.log(`Rendering product: ${product.name} with ID: ${product._id}`);
-
   return (
     <div className="container product-detail-container">
       <div className="product-detail">
@@ -180,7 +156,6 @@ const ProductDetailPage = () => {
           <p className="product-detail-price">${product.price.toFixed(2)}</p>
           <p className="product-detail-description">{product.description}</p>
           <p><strong>Category:</strong> {product.category}</p>
-          <p><strong>Product ID:</strong> {product._id}</p>
         </div>
       </div>
 

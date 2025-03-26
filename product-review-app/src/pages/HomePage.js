@@ -24,7 +24,7 @@ const HomePage = () => {
 
   return (
     <div className="container">
-      <h1>Featured Products</h1>
+      <h1 style={{ textAlign: 'center' }}>Featured Products</h1>
       {products.length === 0 ? (
         <div className="no-products">
           <p>No products found. Please check back later.</p>
