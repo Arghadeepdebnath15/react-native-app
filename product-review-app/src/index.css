@@ -25,6 +25,8 @@ html {
   /* Force removal of any margin or padding */
   margin: 0 !important;
   padding: 0 !important;
+  /* Enable pull-to-refresh */
+  overscroll-behavior-y: contain;
 }
 
 /* Special case for page reload */
@@ -34,10 +36,15 @@ html.reloading * {
   scroll-snap-type: none !important;
 }
 
-/* Mobile devices get auto scroll behavior instead of smooth */
+/* Mobile devices get auto scroll behavior and pull-to-refresh */
 html.mobile-device {
   scroll-behavior: auto !important;
   scroll-snap-type: none !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  /* Ensure proper height */
+  height: 100% !important;
+  min-height: -webkit-fill-available !important;
 }
 
 body {
@@ -57,6 +64,8 @@ body {
   min-height: 100%;
   /* Ensure no space above body */
   position: relative;
+  /* Enable smooth transform transitions for pull-to-refresh */
+  transition: transform 0.2s ease-out;
 }
 
 /* Snap points for scroll stopping - only for desktop */
@@ -79,6 +88,9 @@ body {
     /* Default to auto scroll behavior for mobile */
     scroll-behavior: auto !important;
     scroll-snap-type: none !important;
+    /* Enable pull-to-refresh */
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
   /* Disable snap points on mobile */
@@ -115,4 +127,45 @@ img {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Pull to refresh indicator */
+.pull-to-refresh {
+  position: fixed;
+  top: -60px;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  z-index: 9999;
+  pointer-events: none;
+  transition: transform 0.2s ease-out;
+}
+
+.pull-to-refresh::after {
+  content: '';
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid #007bff;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.pull-to-refresh.visible::after {
+  opacity: 1;
+}
+
+.pull-to-refresh.pulling::after {
+  animation: none;
+  transform: rotate(180deg);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

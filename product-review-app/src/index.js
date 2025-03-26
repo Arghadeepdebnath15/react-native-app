@@ -12,10 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Add mobile class to html element
   if (isMobile) {
     document.documentElement.classList.add('mobile-device');
-    // Force disable smooth scrolling on mobile
-    document.documentElement.style.scrollBehavior = 'auto';
-    document.documentElement.style.scrollSnapType = 'none';
-    document.documentElement.style.overscrollBehavior = 'none';
+    // Enable pull-to-refresh
+    document.documentElement.style.overscrollBehavior = 'contain';
     document.documentElement.style.webkitOverflowScrolling = 'touch';
     
     // Reset any problematic styles
@@ -33,6 +31,71 @@ document.addEventListener('DOMContentLoaded', () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     });
+
+    // Create pull-to-refresh indicator
+    const pullIndicator = document.createElement('div');
+    pullIndicator.className = 'pull-to-refresh';
+    document.body.appendChild(pullIndicator);
+
+    // Add pull-to-refresh functionality
+    let touchStartY = 0;
+    let touchEndY = 0;
+    const minPullDelta = 80; // Reduced minimum pull distance
+    let isPulling = false;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+      isPulling = false;
+      pullIndicator.classList.remove('visible');
+      pullIndicator.style.transform = '';
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      if (window.scrollY === 0) {
+        const touchY = e.touches[0].clientY;
+        const pullDistance = touchY - touchStartY;
+        
+        if (pullDistance > 0) {
+          isPulling = true;
+          // Move indicator instead of whole page
+          const translateY = Math.min(pullDistance / 2, 60);
+          pullIndicator.style.transform = `translateY(${translateY + 60}px)`;
+          pullIndicator.classList.add('visible');
+          
+          if (pullDistance > minPullDelta) {
+            pullIndicator.classList.add('pulling');
+          } else {
+            pullIndicator.classList.remove('pulling');
+          }
+          
+          // Prevent default to avoid Chrome's native pull-to-refresh
+          e.preventDefault();
+        }
+      }
+    }, { passive: false }); // Note: passive false to allow preventDefault
+
+    document.addEventListener('touchend', (e) => {
+      touchEndY = e.changedTouches[0].clientY;
+      const pullDistance = touchEndY - touchStartY;
+      
+      if (isPulling) {
+        // Animate indicator back
+        pullIndicator.style.transform = '';
+        pullIndicator.classList.remove('pulling');
+        
+        // If pulled down far enough, trigger refresh
+        if (window.scrollY === 0 && pullDistance > minPullDelta) {
+          pullIndicator.classList.add('visible');
+          window.location.reload();
+        } else {
+          setTimeout(() => {
+            pullIndicator.classList.remove('visible');
+          }, 200);
+        }
+      }
+      
+      isPulling = false;
+    }, { passive: true });
   }
   
   // Use passive event listeners for touch and wheel events
