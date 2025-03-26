@@ -10,7 +10,10 @@
     "seed": "node --tls-min-v1.0 seed.js",
     "find-ip": "node findIP.js",
     "add-product": "node add-product.js",
-    "add-product-api": "node add-product-api.js"
+    "add-product-api": "node add-product-api.js",
+    "list-products": "node list-products.js",
+    "update-product": "node update-product.js",
+    "update-image": "node update-product-image.js"
   },
   "keywords": [],
   "author": "",
