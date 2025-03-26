@@ -7,6 +7,14 @@
   transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
+/* App container to fill available space */
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
 /* Prevent horizontal scrolling at application root */
 #root {
   width: 100%;
@@ -21,6 +29,8 @@
   /* Add smooth scroll stopping */
   height: 100vh;
   scroll-behavior: smooth;
+  margin: 0; /* Ensure no margin */
+  padding: 0; /* Ensure no padding */
 }
 
 body {
@@ -37,6 +47,8 @@ body {
   overscroll-behavior: none;
   /* Add momentum scrolling for smooth stop */
   -webkit-overflow-scrolling: touch;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 html {
@@ -49,6 +61,8 @@ html {
   /* Add deceleration for smooth stop */
   overscroll-behavior-y: contain;
   height: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .container {
@@ -56,14 +70,15 @@ html {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-  min-height: calc(100vh - 140px); /* Account for header and footer to prevent jumps */
-  margin-top: 60px; /* Space for fixed navbar */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  min-height: auto; /* Allow container to shrink to content size */
+  margin-top: 0; /* Remove top margin */
+  padding-top: 60px; /* Add top padding instead */
+  overflow-x: hidden;
   box-sizing: border-box;
-  /* Improve scrolling performance */
   contain: content;
-  /* Add scroll snap for smooth stopping */
   scroll-snap-type: y proximity;
+  display: flex; /* Use flexbox for better content distribution */
+  flex-direction: column; /* Stack children vertically */
 }
 
 /* ---------- New Navbar Styles ---------- */
@@ -77,8 +92,13 @@ html {
   height: 60px;
   z-index: 1000;
   border-bottom: 2px solid #ccc;
-  overflow: hidden; /* Prevent overflow content */
-  max-width: 100%; /* Ensure navbar doesn't exceed viewport width */
+  overflow: hidden;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  will-change: transform;
+  transform: translateZ(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-container {
@@ -142,16 +162,17 @@ html {
 /* Mobile Navbar */
 @media (max-width: 768px) {
   .main-nav {
-    height: 50px;
+    height: 60px;
     overflow: hidden;
   }
   
   .container {
-    margin-top: 50px;
+    margin-top: 0;
+    padding-top: 60px;
   }
   
   .nav-container {
-    padding: 0 10px;
+    padding: 0px;
     overflow: hidden;
   }
   
@@ -179,7 +200,8 @@ html {
   }
   
   .container {
-    margin-top: 45px;
+    margin-top: 0;
+    padding-top: 45px;
   }
   
   .nav-container {
@@ -573,10 +595,13 @@ footer {
   color: #fff;
   text-align: center;
   padding: 1.5rem 0;
-  height: 60px; /* Fixed height to prevent layout shifts */
+  margin-top: auto; /* Push footer to the bottom of content */
+  height: auto; /* Allow dynamic height based on content */
+  min-height: 60px; /* Minimum height */
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
 /* Responsive */

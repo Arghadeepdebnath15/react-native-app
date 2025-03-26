@@ -52,35 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
   }
   
-  // Toggle scrollbar visibility during scrolling
-  let scrollTimer;
-  const htmlElement = document.documentElement;
-  
-  // Function to show scrollbar
-  const showScrollbar = () => {
-    htmlElement.classList.add('scrolling');
-    clearTimeout(scrollTimer);
-    
-    // Hide scrollbar after 1.5 seconds of no scrolling
-    scrollTimer = setTimeout(() => {
-      htmlElement.classList.remove('scrolling');
-    }, 1500);
-  };
-  
-  // Show scrollbar during scroll events
-  window.addEventListener('scroll', showScrollbar, wheelOpt);
-  window.addEventListener(wheelEvent, showScrollbar, wheelOpt);
-  window.addEventListener('touchmove', showScrollbar, wheelOpt);
-  
-  // Show scrollbar on hover over scrollable areas
-  document.addEventListener('mousemove', (e) => {
-    // Only show scrollbar when mouse is near the edge of the window
-    const edgeThreshold = 50; // pixels from edge
-    if (e.clientX > window.innerWidth - edgeThreshold) {
-      showScrollbar();
-    }
-  }, wheelOpt);
-  
   // Add smooth scroll stopping behavior
   let isScrolling;
   window.addEventListener('scroll', function() {
