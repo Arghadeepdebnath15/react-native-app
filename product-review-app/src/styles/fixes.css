@@ -2,11 +2,12 @@
 html, body, #root {
   margin: 0 !important;
   padding: 0 !important;
-  /* Disable fancy scrolling completely for reliability */
+  /* Enable pull-to-refresh while disabling other fancy scrolling */
   scroll-behavior: auto !important;
   scroll-snap-type: none !important;
-  /* Additional mobile fixes */
-  overscroll-behavior: none !important;
+  /* Allow overscroll for pull-to-refresh */
+  overscroll-behavior-y: contain !important;
+  /* Enable smooth touch scrolling */
   -webkit-overflow-scrolling: touch !important;
   /* Ensure proper height calculation */
   height: 100% !important;
@@ -17,6 +18,8 @@ html, body, #root {
 
 /* Mobile-specific fixes */
 html.mobile-device {
+  /* Enable pull-to-refresh */
+  overscroll-behavior-y: contain !important;
   /* Additional mobile overrides */
   position: static !important;
   overflow: auto !important;
@@ -31,6 +34,8 @@ html.mobile-device body {
   min-height: calc(var(--vh, 1vh) * 100) !important;
   width: 100% !important;
   -webkit-overflow-scrolling: touch !important;
+  /* Enable pull-to-refresh */
+  overscroll-behavior-y: contain !important;
 }
 
 /* Override any potential conflicting styles */
@@ -72,7 +77,8 @@ html.mobile-device body {
 html, body, .container, .products-grid, .review-list {
   scroll-behavior: auto !important;
   scroll-snap-type: none !important;
-  overscroll-behavior: none !important;
+  /* Enable pull-to-refresh */
+  overscroll-behavior-y: contain !important;
 }
 
 /* Disable snapping completely */
@@ -91,6 +97,8 @@ section, .product-card, .review-card, .product-detail, footer {
     min-height: calc(var(--vh, 1vh) * 100) !important;
     width: 100% !important;
     max-width: 100% !important;
+    /* Enable pull-to-refresh */
+    overscroll-behavior-y: contain !important;
     /* Improve touch handling */
     touch-action: manipulation !important;
     -webkit-tap-highlight-color: transparent !important;
@@ -99,8 +107,8 @@ section, .product-card, .review-card, .product-detail, footer {
   .container {
     margin-top: 0 !important;
     padding-top: 50px !important;
-    /* Prevent rubber-banding issues */
-    overscroll-behavior-y: none !important;
+    /* Enable pull-to-refresh */
+    overscroll-behavior-y: contain !important;
   }
   
   /* Prevent fixed position issues */
@@ -126,6 +134,8 @@ section, .product-card, .review-card, .product-detail, footer {
   min-height: 100vh !important;
   min-height: calc(var(--vh, 1vh) * 100) !important;
   width: 100% !important;
+  /* Enable pull-to-refresh */
+  overscroll-behavior-y: contain !important;
   /* Prevent overflow issues */
   overflow-x: hidden !important;
   position: relative !important;
