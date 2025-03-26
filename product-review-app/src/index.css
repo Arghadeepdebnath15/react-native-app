@@ -13,6 +13,9 @@ html {
   /* Prevent content shifting and layout reflows */
   overflow-x: hidden;
   width: 100%;
+  /* Add smooth scroll stopping with scroll snap */
+  scroll-snap-type: y proximity;
+  height: 100%;
 }
 
 body {
@@ -30,6 +33,21 @@ body {
   overflow-x: hidden;
   /* Ensure content doesn't cause horizontal scrolling */
   width: 100%;
+  /* Add momentum-based scrolling for iOS devices */
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+}
+
+/* Snap points for scroll stopping */
+section, .product-card, .review-card, .product-detail, footer {
+  scroll-snap-align: start;
+  scroll-margin-top: 60px;
+}
+
+/* Add smooth deceleration for scroll stop */
+.container, .products-grid, .review-list {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
 }
 
 /* Improve performance for large lists */

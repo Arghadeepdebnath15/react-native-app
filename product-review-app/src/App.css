@@ -18,6 +18,9 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
+  /* Add smooth scroll stopping */
+  height: 100vh;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -32,6 +35,8 @@ body {
   max-width: 100vw;
   /* Improve scrolling performance */
   overscroll-behavior: none;
+  /* Add momentum scrolling for smooth stop */
+  -webkit-overflow-scrolling: touch;
 }
 
 html {
@@ -41,6 +46,9 @@ html {
   max-width: 100%;
   /* Enable smooth scrolling */
   scroll-behavior: smooth;
+  /* Add deceleration for smooth stop */
+  overscroll-behavior-y: contain;
+  height: 100%;
 }
 
 .container {
@@ -54,6 +62,8 @@ html {
   box-sizing: border-box;
   /* Improve scrolling performance */
   contain: content;
+  /* Add scroll snap for smooth stopping */
+  scroll-snap-type: y proximity;
 }
 
 /* ---------- New Navbar Styles ---------- */
@@ -239,7 +249,7 @@ html {
   flex-direction: column;
 }
 
-/* Products Grid */
+/* Products Grid with smooth stopping */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -254,6 +264,9 @@ html {
   will-change: transform;
   /* Reduce reflow and repaint */
   contain: layout style;
+  /* Add scroll snap container */
+  scroll-snap-type: y proximity;
+  padding-bottom: 1rem;
 }
 
 @media (max-width: 480px) {
@@ -275,7 +288,7 @@ html {
   justify-content: center;
 }
 
-/* Product Card */
+/* Product Card snap point */
 .product-card {
   background-color: #fff;
   border-radius: 8px;
@@ -291,6 +304,9 @@ html {
   contain: layout style paint;
   width: 100%;
   max-width: 100%;
+  /* Add scroll snap alignment */
+  scroll-snap-align: start;
+  scroll-margin-top: 70px;
 }
 
 .product-card:hover {
@@ -377,6 +393,9 @@ html {
   margin-bottom: 2rem;
   width: 100%;
   max-width: 100%;
+  /* Add scroll snap alignment */
+  scroll-snap-align: start;
+  scroll-margin-top: 70px;
 }
 
 .product-detail-image-container {
@@ -493,6 +512,7 @@ input, textarea, select {
   opacity: 0.7;
 }
 
+/* Review list with smooth stopping */
 .review-list {
   display: flex;
   flex-direction: column;
@@ -504,13 +524,20 @@ input, textarea, select {
   will-change: transform;
   /* Reduce reflow and repaint */
   contain: layout style;
+  /* Add scroll snap container */
+  scroll-snap-type: y proximity;
+  padding-bottom: 1rem;
 }
 
+/* Review card snap point */
 .review-card {
   background-color: #fff;
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* Add scroll snap alignment */
+  scroll-snap-align: start;
+  scroll-margin-top: 70px;
 }
 
 .review-header {
