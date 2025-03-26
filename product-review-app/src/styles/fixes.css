@@ -2,8 +2,35 @@
 html, body, #root {
   margin: 0 !important;
   padding: 0 !important;
-  /* Make scrolling behavior conditional to allow reloads */
-  transition: scroll-behavior 0.3s !important;
+  /* Disable fancy scrolling completely for reliability */
+  scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
+  /* Additional mobile fixes */
+  overscroll-behavior: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  /* Ensure proper height calculation */
+  height: 100% !important;
+  min-height: 100% !important;
+  /* Use viewport height variable for mobile */
+  min-height: calc(var(--vh, 1vh) * 100) !important;
+}
+
+/* Mobile-specific fixes */
+html.mobile-device {
+  /* Additional mobile overrides */
+  position: static !important;
+  overflow: auto !important;
+  -webkit-tap-highlight-color: transparent !important;
+  touch-action: manipulation !important;
+}
+
+html.mobile-device body {
+  /* Mobile body fixes */
+  position: static !important;
+  overflow: auto !important;
+  min-height: calc(var(--vh, 1vh) * 100) !important;
+  width: 100% !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 /* Override any potential conflicting styles */
@@ -16,6 +43,11 @@ html, body, #root {
   margin-top: 0 !important;
   padding-top: 0 !important;
   box-sizing: border-box !important;
+  /* Prevent nav from causing scroll issues */
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
 }
 
 /* Ensure content doesn't overlap the navbar and only takes required space */
@@ -24,43 +56,59 @@ html, body, #root {
   padding-top: 60px !important;
   min-height: auto !important;
   height: auto !important;
-  flex: 1 0 auto !important; /* Grow but don't shrink, respect content height */
+  flex: 1 0 auto !important;
+  /* Prevent container from causing scroll issues */
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  /* Ensure proper width */
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-/* Allow page reloading */
-html.reloading {
+/* Always allow reloading by disabling fancy scroll */
+html, body, .container, .products-grid, .review-list {
   scroll-behavior: auto !important;
   scroll-snap-type: none !important;
-  -webkit-overflow-scrolling: auto !important;
+  overscroll-behavior: none !important;
 }
 
-/* Mobile-specific fixes */
-html.mobile-device {
-  /* Better scrolling performance on mobile */
-  scroll-behavior: auto !important;
-  scroll-snap-type: none !important;
-  /* Ensure momentum scrolling still works */
-  -webkit-overflow-scrolling: touch !important;
-}
-
-/* Mobile-specific fixes for containers */
-html.mobile-device .container,
-html.mobile-device .products-grid,
-html.mobile-device .review-list {
-  scroll-snap-type: none !important;
-  scroll-behavior: auto !important;
+/* Disable snapping completely */
+section, .product-card, .review-card, .product-detail, footer {
+  scroll-snap-align: none !important;
 }
 
 /* Fix for mobile reloading */
 @media (max-width: 768px) {
-  html, body {
-    scroll-behavior: auto !important;
-    scroll-snap-type: none !important;
+  html.mobile-device, 
+  html.mobile-device body {
+    /* Additional mobile fixes */
+    position: static !important;
+    overflow: auto !important;
+    height: calc(var(--vh, 1vh) * 100) !important;
+    min-height: calc(var(--vh, 1vh) * 100) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    /* Improve touch handling */
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
   
   .container {
     margin-top: 0 !important;
     padding-top: 50px !important;
+    /* Prevent rubber-banding issues */
+    overscroll-behavior-y: none !important;
+  }
+  
+  /* Prevent fixed position issues */
+  .main-nav {
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    /* Ensure smooth rendering */
+    will-change: transform !important;
   }
 }
 
@@ -76,5 +124,14 @@ html.mobile-device .review-list {
   display: flex !important;
   flex-direction: column !important;
   min-height: 100vh !important;
+  min-height: calc(var(--vh, 1vh) * 100) !important;
   width: 100% !important;
+  /* Prevent overflow issues */
+  overflow-x: hidden !important;
+  position: relative !important;
+  /* Improve performance */
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
 } 

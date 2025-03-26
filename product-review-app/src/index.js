@@ -15,6 +15,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Force disable smooth scrolling on mobile
     document.documentElement.style.scrollBehavior = 'auto';
     document.documentElement.style.scrollSnapType = 'none';
+    document.documentElement.style.overscrollBehavior = 'none';
+    document.documentElement.style.webkitOverflowScrolling = 'touch';
+    
+    // Reset any problematic styles
+    document.documentElement.style.position = 'static';
+    document.body.style.position = 'static';
+    document.documentElement.style.overflow = 'auto';
+    document.body.style.overflow = 'auto';
+    
+    // Set viewport height for mobile
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+    
+    // Update viewport height on resize and orientation change
+    window.addEventListener('resize', () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
   }
   
   // Use passive event listeners for touch and wheel events
@@ -40,100 +58,76 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('touchstart', function() {}, wheelOpt);
   window.addEventListener('touchmove', function() {}, wheelOpt);
   
-  // Special handling for orientation change on mobile devices
   if (isMobile) {
+    // Handle orientation changes
     window.addEventListener('orientationchange', function() {
-      // Force disable smooth scrolling during orientation changes
       document.documentElement.classList.add('reloading');
+      // Force redraw after orientation change
       setTimeout(() => {
+        document.body.style.display = 'none';
+        // Force reflow by reading offsetHeight
+        // eslint-disable-next-line no-unused-vars
+        const forceReflow = document.body.offsetHeight;
+        document.body.style.display = '';
         document.documentElement.classList.remove('reloading');
-      }, 1000);
+      }, 100);
     });
     
-    // Additional fix for Safari on iOS
+    // Handle page show events (back/forward navigation)
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
-        // Page was restored from cache (back/forward navigation)
         document.documentElement.classList.add('reloading');
+        // Force redraw for cached pages
         setTimeout(() => {
+          document.body.style.display = 'none';
+          // Force reflow by reading offsetHeight
+          // eslint-disable-next-line no-unused-vars
+          const forceReflow = document.body.offsetHeight;
+          document.body.style.display = '';
           document.documentElement.classList.remove('reloading');
-        }, 1000);
+        }, 100);
       }
     });
-  }
-  
-  // Only apply IntersectionObserver on desktop devices
-  if (!isMobile && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.target.classList.contains('product-card') || 
-            entry.target.classList.contains('review-card')) {
-          if (!entry.isIntersecting) {
-            entry.target.style.contentVisibility = 'auto';
-          } else {
-            entry.target.style.contentVisibility = 'visible';
-          }
-        }
-      });
-    }, { rootMargin: '100px' });
     
-    // Apply after components are loaded
-    setTimeout(() => {
-      document.querySelectorAll('.product-card, .review-card').forEach(el => {
-        observer.observe(el);
-      });
-    }, 1000);
-  }
-  
-  // Enable smooth reloading
-  window.addEventListener('beforeunload', () => {
-    // Remove scroll behavior temporarily to enable smooth reloading
-    document.documentElement.style.scrollBehavior = 'auto';
-    document.body.style.scrollBehavior = 'auto';
-    document.documentElement.classList.add('reloading');
-    
-    // Reset scroll position on reload
-    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
-    if (isMobile) {
+    // Handle beforeunload events
+    window.addEventListener('beforeunload', () => {
+      // Disable smooth scrolling before unload
+      document.documentElement.style.scrollBehavior = 'auto';
+      document.body.style.scrollBehavior = 'auto';
+      // Save scroll position
+      sessionStorage.setItem('scrollPosition', window.scrollY.toString());
       sessionStorage.setItem('isMobileReload', 'true');
-    }
-  });
-  
-  // Restore scroll position after reloading
-  const savedPosition = sessionStorage.getItem('scrollPosition');
-  if (savedPosition) {
-    const scrollPos = parseInt(savedPosition, 10);
+    });
     
-    // Clear storage
-    sessionStorage.removeItem('scrollPosition');
+    // Restore scroll position if needed
+    const savedPosition = sessionStorage.getItem('scrollPosition');
+    const isMobileReload = sessionStorage.getItem('isMobileReload');
     
-    // Wait for page to be fully loaded, especially important on mobile
-    const scrollDelay = isMobile ? 500 : 0;
-    setTimeout(() => {
-      // Scroll to the saved position
-      window.scrollTo(0, scrollPos);
+    if (savedPosition && isMobileReload) {
+      const scrollPos = parseInt(savedPosition, 10);
+      sessionStorage.removeItem('scrollPosition');
+      sessionStorage.removeItem('isMobileReload');
       
-      // Only re-enable smooth scrolling on desktop after a delay
+      // Wait for page to be fully loaded
       setTimeout(() => {
-        document.documentElement.classList.remove('reloading');
-        if (!isMobile) {
-          document.documentElement.style.scrollBehavior = 'smooth';
-        }
-      }, 1000);
-    }, scrollDelay);
-  } else {
-    setTimeout(() => {
-      document.documentElement.classList.remove('reloading');
-    }, 500);
+        window.scrollTo(0, scrollPos);
+        // Keep scroll behavior disabled
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.body.style.scrollBehavior = 'auto';
+      }, 500);
+    }
   }
   
   // Simple scroll handler that won't interfere with reloading
   let scrollTimeout;
   window.addEventListener('scroll', function() {
     clearTimeout(scrollTimeout);
-    
     scrollTimeout = setTimeout(function() {
-      // Minimal work on scroll stop to avoid breaking reload
+      // Minimal work on scroll stop
+      if (isMobile) {
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.body.style.scrollBehavior = 'auto';
+      }
     }, 66);
   }, wheelOpt);
 });
