@@ -2,8 +2,11 @@
   background-color: #2c3e50;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 15px 0;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 1000;
 }
 
@@ -22,6 +25,7 @@
   font-weight: 700;
   text-decoration: none;
   transition: color 0.3s ease;
+  white-space: nowrap;
 }
 
 .navbar-brand:hover {
@@ -48,15 +52,40 @@
   transform: translateY(-2px);
 }
 
-/* Responsive design */
+/* Responsive design for tablets */
 @media (max-width: 768px) {
   .navbar {
+    padding: 0 15px;
+  }
+  
+  .navbar-brand {
+    font-size: 20px;
+  }
+  
+  .nav-button {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Responsive design for mobile phones */
+@media (max-width: 576px) {
+  .navbar-container {
+    padding: 10px 0;
+  }
+  
+  .navbar {
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
   }
   
   .nav-buttons {
     width: 100%;
     justify-content: center;
+  }
+  
+  .nav-button {
+    padding: 5px 10px;
+    font-size: 13px;
   }
 } 

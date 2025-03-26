@@ -542,7 +542,15 @@ footer {
 /* Main content area */
 .main-content {
   flex: 1;
+  padding-top: 90px; /* Added space for fixed navbar */
   padding-bottom: 30px;
+}
+
+/* Container for consistent width */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* Typography */
@@ -623,6 +631,10 @@ p {
 
 /* Responsive styles */
 @media (max-width: 768px) {
+  .main-content {
+    padding-top: 100px; /* More space for navbar on mobile */
+  }
+  
   h1 {
     font-size: 2rem;
   }
@@ -633,5 +645,11 @@ p {
 
   h3 {
     font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding-top: 120px; /* Even more space for stacked navbar on small mobile */
   }
 }
