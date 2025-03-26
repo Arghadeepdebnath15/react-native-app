@@ -17,6 +17,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  flex-wrap: nowrap;
 }
 
 .navbar-brand {
@@ -35,6 +36,7 @@
 .nav-buttons {
   display: flex;
   gap: 15px;
+  align-items: center;
 }
 
 .nav-button {
@@ -45,6 +47,8 @@
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
+  display: inline-block;
+  text-align: center;
 }
 
 .nav-button:hover {
@@ -75,8 +79,16 @@
   }
   
   .navbar {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 10px;
+    justify-content: center;
+  }
+  
+  .navbar-brand {
+    margin-bottom: 8px;
+    text-align: center;
+    width: 100%;
   }
   
   .nav-buttons {
