@@ -7,6 +7,11 @@ const getApiUrl = () => {
     return process.env.REACT_APP_API_URL;
   }
   
+  // For Netlify deployment with Render backend
+  if (window.location.hostname.includes('netlify')) {
+    return 'https://newrepo-pk31.onrender.com/api';
+  }
+  
   // Get current hostname for development environment
   const currentHostname = window.location.hostname;
   
