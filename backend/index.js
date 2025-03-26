@@ -41,22 +41,25 @@ const PORT = process.env.PORT || 8080; // Use PORT from environment or default t
 const localIp = getLocalIpAddress();
 const isProduction = process.env.NODE_ENV === 'production';
 
-// CORS config with proper origins for production
+// CORS config - allow all origins for now to ensure it works
 const corsOptions = {
-  origin: [
-    'https://product-review-site.netlify.app',
-    'https://argha15.netlify.app',  // Add your actual Netlify domain
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://192.168.0.103:3000'
-  ],
+  origin: '*', // Allow requests from any origin
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: false // Changed to false since '*' doesn't work with credentials:true
 };
 
 // Middleware
 app.use(cors(corsOptions));
+
+// Additional CORS headers for older browsers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
 app.use(express.json());
 
 // Set security headers

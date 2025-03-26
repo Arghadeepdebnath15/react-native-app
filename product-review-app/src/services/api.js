@@ -42,6 +42,7 @@ const isProblematicProduct = (productId, productName = '') => {
 // API methods for products
 export const fetchProducts = async () => {
   try {
+    // Use the full path to ensure we're hitting the correct endpoint
     const response = await api.get('/products');
     return response.data;
   } catch (error) {
