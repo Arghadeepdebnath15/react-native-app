@@ -10,7 +10,7 @@ const getBackendUrl = () => {
 export const getImageUrl = (imageUrl) => {
   if (!imageUrl) return '';
   
-  // If it's already an absolute URL, return as is
+  // If it's already an absolute URL (including Cloudinary URLs), return as is
   if (imageUrl.startsWith('http')) {
     return imageUrl;
   }

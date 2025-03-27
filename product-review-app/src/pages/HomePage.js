@@ -22,6 +22,7 @@ const HomePage = ({ showForm, setShowForm }) => {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [imageError, setImageError] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Get search query from URL
   useEffect(() => {
@@ -117,67 +118,139 @@ const HomePage = ({ showForm, setShowForm }) => {
     setImageError(error);
   };
 
-  const handleImageError = () => {
-    setImageError(true);
-    setFormData(prev => ({
-      ...prev,
-      imagePreview: null
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (formData.useImageUrl && !validateImageUrl(formData.imageUrl)) {
-      setFormError('Please enter a valid image URL');
-      return;
-    }
-
     setFormLoading(true);
-    setFormError('');
-
+    
     try {
+      // Validate form
+      if (!formData.name.trim()) {
+        setFormError('Product name is required');
+        setFormLoading(false);
+        return;
+      }
+
+      if (formData.useImageUrl && !validateImageUrl(formData.imageUrl)) {
+        setFormError('Please enter a valid image URL');
+        setFormLoading(false);
+        return;
+      }
+
+      // Create FormData object for API request
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
       formDataToSend.append('price', formData.price);
-      
-      // Handle image based on type selection
-      if (formData.useImageUrl) {
+      formDataToSend.append('category', formData.category);
+
+      // Handle image upload
+      if (!formData.useImageUrl && formData.image) {
+        // Update to use the correct Cloudinary cloud name
+        const cloudName = 'dbhl52bav'; // Updated cloud name from your environment variable
+        const uploadPreset = 'product_review_app'; // Custom preset name that's unlikely to be taken
+        
+        const cloudinaryData = new FormData();
+        cloudinaryData.append('file', formData.image);
+        cloudinaryData.append('upload_preset', uploadPreset);
+        cloudinaryData.append('cloud_name', cloudName); // Add cloud_name to the form data
+        
+        try {
+          // Upload to Cloudinary - fix the URL path to use image/upload instead of auto/upload
+          const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+          console.log('Uploading to Cloudinary:', cloudinaryUrl);
+          
+          const cloudinaryResponse = await fetch(cloudinaryUrl, {
+            method: 'POST',
+            body: cloudinaryData
+          });
+          
+          if (!cloudinaryResponse.ok) {
+            const errorText = await cloudinaryResponse.text();
+            console.error('Cloudinary error response:', errorText);
+            throw new Error(`Failed to upload to Cloudinary: ${cloudinaryResponse.status}`);
+          }
+          
+          const cloudinaryJson = await cloudinaryResponse.json();
+          
+          // Use the secure URL from Cloudinary
+          if (cloudinaryJson.secure_url) {
+            formDataToSend.append('imageUrl', cloudinaryJson.secure_url);
+          } else {
+            throw new Error('No image URL returned from Cloudinary');
+          }
+          
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          setFormError('Failed to upload image. Please try using an image URL instead.');
+          setFormLoading(false);
+          return;
+        }
+      } else if (formData.useImageUrl) {
         formDataToSend.append('imageUrl', formData.imageUrl);
-      } else if (formData.image) {
-        formDataToSend.append('image', formData.image);
+      } else {
+        // No image provided
+        setFormError('Please provide an image or image URL');
+        setFormLoading(false);
+        return;
       }
 
-      await api.post('/products', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      // Send to your backend
+      const response = await fetch(`${api.defaults.baseURL}/products`, {
+        method: 'POST',
+        body: formDataToSend
       });
 
-      // Reset form
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create product');
+      }
+
+      // Reset form and show success
       setFormData({
         name: '',
         description: '',
+        price: '',
+        category: '',
         image: null,
         imageUrl: '',
-        imagePreview: null,
-        category: '',
-        price: '',
+        imagePreview: '',
         useImageUrl: false
       });
       setShowForm(false);
-      setImageError(false);
-      
-      // Refresh products list
-      refreshProducts();
-    } catch (err) {
-      setFormError(err.response?.data?.message || 'Error adding product. Please try again.');
+      setSuccessMessage('Product added successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      refreshProducts(); // Refresh product list
+    } catch (error) {
+      console.error('Error adding product:', error);
+      setFormError(error.message || 'Failed to add product. Please try again.');
+      setTimeout(() => setFormError(''), 5000);
     } finally {
       setFormLoading(false);
     }
   };
+
+  const ImageUrlInput = () => (
+    <div className="form-group">
+      <input
+        type="text"
+        id="imageUrl"
+        name="imageUrl"
+        value={formData.imageUrl}
+        onChange={handleImageUrlChange}
+        placeholder="Enter image URL"
+        className={`form-control ${imageError ? 'is-invalid' : ''}`}
+      />
+      {imageError && <div className="invalid-feedback">{imageError}</div>}
+      <small className="form-text text-muted">
+        Enter a direct URL to an image (JPG, PNG, GIF, etc.)
+      </small>
+      <div className="alert alert-info mt-2">
+        <small>
+          <strong>Tip:</strong> Using image URLs is recommended as uploaded files may not persist after server restarts.
+        </small>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -198,6 +271,14 @@ const HomePage = ({ showForm, setShowForm }) => {
 
   return (
     <div className="container">
+      {/* Show success message if present */}
+      {successMessage && (
+        <div className="alert alert-success alert-dismissible fade show" role="alert">
+          {successMessage}
+          <button type="button" className="btn-close" onClick={() => setSuccessMessage('')} aria-label="Close"></button>
+        </div>
+      )}
+      
       {showForm && (
         <div className="floating-form-overlay" onClick={(e) => {
           // Close form when clicking overlay (outside form)
@@ -213,7 +294,28 @@ const HomePage = ({ showForm, setShowForm }) => {
               ×
             </button>
             <h2>Add New Product for Review</h2>
-            {formError && <div className="error-message">{formError}</div>}
+            
+            {formError && (
+              <div className="alert alert-danger">
+                <div className="d-flex align-items-center">
+                  <svg className="me-2" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/>
+                  </svg>
+                  <span>{formError}</span>
+                </div>
+                {formError.includes('Failed to upload image') && (
+                  <div className="mt-2 small">
+                    <strong>Troubleshooting:</strong>
+                    <ul className="mb-0 ps-3">
+                      <li>Make sure you have an unsigned upload preset named 'product_review_app' in your Cloudinary account</li>
+                      <li>Check that your image is less than 10MB</li>
+                      <li>Try a different image format (JPG, PNG)</li>
+                      <li>Use the Image URL option instead</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="add-product-form">
               <div className="form-group">
@@ -264,14 +366,13 @@ const HomePage = ({ showForm, setShowForm }) => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Image Source</label>
-                <div className="image-source-options">
-                  <label className="radio-label">
+              <div className="form-group mb-3">
+                <div className="d-flex">
+                  <label className="radio-label me-3">
                     <input
                       type="radio"
-                      name="imageSource"
-                      value="file"
+                      name="imageOption"
+                      value="upload"
                       checked={!formData.useImageUrl}
                       onChange={handleImageTypeChange}
                     />
@@ -280,7 +381,7 @@ const HomePage = ({ showForm, setShowForm }) => {
                   <label className="radio-label">
                     <input
                       type="radio"
-                      name="imageSource"
+                      name="imageOption"
                       value="url"
                       checked={formData.useImageUrl}
                       onChange={handleImageTypeChange}
@@ -288,46 +389,41 @@ const HomePage = ({ showForm, setShowForm }) => {
                     <span>Image URL</span>
                   </label>
                 </div>
+                <small className="form-text text-info">
+                  <strong>Note:</strong> Both options will store your images permanently. Upload Image uses Cloudinary, while Image URL lets you use any external image link.
+                </small>
+              </div>
 
-                {formData.useImageUrl ? (
-                  <div>
-                    <input
-                      type="url"
-                      id="imageUrl"
-                      name="imageUrl"
-                      value={formData.imageUrl}
-                      onChange={handleImageUrlChange}
-                      placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
-                      className={imageError ? 'error' : ''}
-                      required
-                    />
-                    {imageError && (
-                      <div className="input-error">
-                        {imageError}
-                      </div>
-                    )}
-                  </div>
-                ) : (
+              {!formData.useImageUrl ? (
+                <div className="form-group">
                   <input
                     type="file"
                     id="image"
                     name="image"
-                    onChange={handleImageChange}
                     accept="image/*"
-                    required
+                    onChange={handleImageChange}
+                    className="form-control-file"
                   />
-                )}
-
-                {formData.imagePreview && (
-                  <div className="image-preview">
-                    <img 
-                      src={formData.imagePreview} 
-                      alt="Preview" 
-                      onError={handleImageError}
-                    />
+                  {formData.imagePreview && (
+                    <div className="image-preview">
+                      <img src={formData.imagePreview} alt="Preview" />
+                    </div>
+                  )}
+                  <div className="alert alert-info mt-2">
+                    <small>
+                      <svg className="me-1" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                      </svg>
+                      Images are stored in your Cloudinary account. To make uploads work, please create an unsigned upload preset named 'product_review_app' in your Cloudinary dashboard.
+                      <a href="https://cloudinary.com/console/settings/upload" target="_blank" rel="noopener noreferrer" className="ms-1 text-primary">
+                        Cloudinary Upload Settings →
+                      </a>
+                    </small>
                   </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <ImageUrlInput />
+              )}
 
               <button 
                 type="submit" 
