@@ -146,17 +146,16 @@ const HomePage = ({ showForm, setShowForm }) => {
       // Handle image upload
       if (!formData.useImageUrl && formData.image) {
         // Update to use the correct Cloudinary cloud name
-        const cloudName = 'dbhl52bav'; // Updated cloud name from your environment variable
-        const uploadPreset = 'product_review_app'; // Custom preset name that's unlikely to be taken
+        const cloudName = 'dbhl52bav'; // Your Cloudinary cloud name
+        const uploadPreset = 'rcwfhnbx'; // Your unsigned upload preset
         
         const cloudinaryData = new FormData();
         cloudinaryData.append('file', formData.image);
         cloudinaryData.append('upload_preset', uploadPreset);
-        cloudinaryData.append('cloud_name', cloudName); // Add cloud_name to the form data
         
         try {
-          // Upload to Cloudinary - fix the URL path to use image/upload instead of auto/upload
-          const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+          // Upload to Cloudinary using the correct endpoint
+          const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
           console.log('Uploading to Cloudinary:', cloudinaryUrl);
           
           const cloudinaryResponse = await fetch(cloudinaryUrl, {
@@ -246,7 +245,7 @@ const HomePage = ({ showForm, setShowForm }) => {
       </small>
       <div className="alert alert-info mt-2">
         <small>
-          <strong>Tip:</strong> Using image URLs is recommended as uploaded files may not persist after server restarts.
+          <strong>Note:</strong> Images are stored securely in Cloudinary. Make sure you have an unsigned upload preset named 'rcwfhnbx' in your Cloudinary account.
         </small>
       </div>
     </div>
