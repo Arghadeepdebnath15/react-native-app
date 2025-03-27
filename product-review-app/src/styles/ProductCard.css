@@ -11,7 +11,7 @@
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-15px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -67,12 +67,13 @@
   display: flex;
   gap: 10px;
   margin-top: 15px;
+  justify-content: center;  
 }
 
 .product-actions button {
-  padding: 8px 16px;
+  padding: 12px 26px;
   border: none;
-  border-radius: 4px;
+  border-radius: 25px;
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s;

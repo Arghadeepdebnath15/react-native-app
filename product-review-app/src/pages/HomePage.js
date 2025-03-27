@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 import ProductCard from '../components/ProductCard';
+import SuccessPopup from '../components/SuccessPopup';
 import api from '../services/api';
 import '../styles/AddProduct.css';
 
@@ -22,6 +23,7 @@ const HomePage = ({ showForm, setShowForm }) => {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [imageError, setImageError] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   // Get search query from URL
@@ -49,24 +51,8 @@ const HomePage = ({ showForm, setShowForm }) => {
 
   const validateImageUrl = (url) => {
     try {
-      const urlObj = new URL(url);
-      
-      // Check common image extensions
-      const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico)$/i;
-      if (imageExtensions.test(urlObj.pathname)) {
-        return true;
-      }
-      
-      // Check for image-related keywords
-      const urlString = url.toLowerCase();
-      if (urlString.includes('image') || 
-          urlString.includes('photo') || 
-          urlString.includes('picture') ||
-          urlString.includes('media')) {
-        return true;
-      }
-      
-      return false;
+      new URL(url); // Only validate if it's a valid URL
+      return true;
     } catch (e) {
       return false;
     }
@@ -103,9 +89,6 @@ const HomePage = ({ showForm, setShowForm }) => {
     
     try {
       new URL(url); // Basic URL validation
-      if (!validateImageUrl(url)) {
-        error = 'URL does not appear to be an image. Please check the URL.';
-      }
     } catch (e) {
       error = 'Please enter a valid URL';
     }
@@ -145,45 +128,7 @@ const HomePage = ({ showForm, setShowForm }) => {
 
       // Handle image upload
       if (!formData.useImageUrl && formData.image) {
-        // Update to use the correct Cloudinary cloud name
-        const cloudName = 'dbhl52bav'; // Your Cloudinary cloud name
-        const uploadPreset = 'rcwfhnbx'; // Your unsigned upload preset
-        
-        const cloudinaryData = new FormData();
-        cloudinaryData.append('file', formData.image);
-        cloudinaryData.append('upload_preset', uploadPreset);
-        
-        try {
-          // Upload to Cloudinary using the correct endpoint
-          const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
-          console.log('Uploading to Cloudinary:', cloudinaryUrl);
-          
-          const cloudinaryResponse = await fetch(cloudinaryUrl, {
-            method: 'POST',
-            body: cloudinaryData
-          });
-          
-          if (!cloudinaryResponse.ok) {
-            const errorText = await cloudinaryResponse.text();
-            console.error('Cloudinary error response:', errorText);
-            throw new Error(`Failed to upload to Cloudinary: ${cloudinaryResponse.status}`);
-          }
-          
-          const cloudinaryJson = await cloudinaryResponse.json();
-          
-          // Use the secure URL from Cloudinary
-          if (cloudinaryJson.secure_url) {
-            formDataToSend.append('imageUrl', cloudinaryJson.secure_url);
-          } else {
-            throw new Error('No image URL returned from Cloudinary');
-          }
-          
-        } catch (uploadError) {
-          console.error('Image upload error:', uploadError);
-          setFormError('Failed to upload image. Please try using an image URL instead.');
-          setFormLoading(false);
-          return;
-        }
+        formDataToSend.append('image', formData.image);
       } else if (formData.useImageUrl) {
         formDataToSend.append('imageUrl', formData.imageUrl);
       } else {
@@ -216,8 +161,8 @@ const HomePage = ({ showForm, setShowForm }) => {
         useImageUrl: false
       });
       setShowForm(false);
-      setSuccessMessage('Product added successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setSuccessMessage('Product added successfully! 🎉');
+      setShowSuccess(true);
       refreshProducts(); // Refresh product list
     } catch (error) {
       console.error('Error adding product:', error);
@@ -270,12 +215,11 @@ const HomePage = ({ showForm, setShowForm }) => {
 
   return (
     <div className="container">
-      {/* Show success message if present */}
-      {successMessage && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          {successMessage}
-          <button type="button" className="btn-close" onClick={() => setSuccessMessage('')} aria-label="Close"></button>
-        </div>
+      {showSuccess && (
+        <SuccessPopup
+          message={successMessage}
+          onClose={() => setShowSuccess(false)}
+        />
       )}
       
       {showForm && (

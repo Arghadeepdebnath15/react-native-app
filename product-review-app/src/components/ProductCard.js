@@ -41,7 +41,7 @@ const ProductCard = ({ product }) => {
         className="product-image"
         onError={(e) => {
           e.target.onerror = null;
-          e.target.src = '/placeholder-image.png'; // You can add a placeholder image
+          e.target.src = '/placeholder-image.svg';
         }}
       />
       <div className="product-info">

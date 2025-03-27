@@ -136,7 +136,7 @@ const Navbar = ({ onAddProductClick }) => {
                       alt={product.name}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = '/placeholder-image.png';
+                        e.target.src = '/placeholder-image.svg';
                       }}
                     />
                     <div className="suggestion-item-info">

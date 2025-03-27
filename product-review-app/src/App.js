@@ -24,7 +24,7 @@ function App() {
           <main className="container">
             <Routes>
               <Route path="/" element={<HomePage showForm={showAddProductForm} setShowForm={setShowAddProductForm} />} />
-              <Route path="/product/:id" element={<ProductDetailPage />} />
+              <Route path="/product/:id" element={<ProductDetailPage showForm={showAddProductForm} setShowForm={setShowAddProductForm} />} />
               <Route path="/add-product" element={<AddProduct />} />
             </Routes>
           </main>

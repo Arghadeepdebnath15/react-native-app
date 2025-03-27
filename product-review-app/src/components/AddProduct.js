@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import '../styles/AddProduct.css';
 
-const AddProduct = () => {
+const AddProduct = ({ onClose }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -57,7 +57,11 @@ const AddProduct = () => {
       });
 
       if (response.data) {
-        navigate('/products'); // Redirect to products page after successful submission
+        if (onClose) {
+          onClose();
+        } else {
+          navigate('/products');
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Error adding product. Please try again.');
@@ -67,10 +71,9 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="add-product-container">
-      <h2>Add New Product for Review</h2>
+    <div className="add-product-section">
+      <h2>Add New Product</h2>
       {error && <div className="error-message">{error}</div>}
-      
       <form onSubmit={handleSubmit} className="add-product-form">
         <div className="form-group">
           <label htmlFor="name">Product Name</label>
@@ -128,14 +131,14 @@ const AddProduct = () => {
             name="image"
             onChange={handleImageChange}
             accept="image/*"
-            required
           />
-          {formData.imagePreview && (
-            <div className="image-preview">
-              <img src={formData.imagePreview} alt="Preview" />
-            </div>
-          )}
         </div>
+
+        {formData.imagePreview && (
+          <div className="image-preview">
+            <img src={formData.imagePreview} alt="Preview" />
+          </div>
+        )}
 
         <button type="submit" disabled={loading}>
           {loading ? 'Adding Product...' : 'Add Product'}

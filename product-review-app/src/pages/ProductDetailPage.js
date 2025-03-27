@@ -4,8 +4,9 @@ import { ProductContext } from '../context/ProductContext';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
 import { getImageUrl } from '../utils/imageUtils';
+import AddProduct from '../components/AddProduct';
 
-const ProductDetailPage = () => {
+const ProductDetailPage = ({ showForm, setShowForm }) => {
   const { id } = useParams();
   const { getProduct, submitReview, loading: contextLoading, error } = useContext(ProductContext);
   const [product, setProduct] = useState(null);
@@ -169,6 +170,24 @@ const ProductDetailPage = () => {
 
   return (
     <div className="container product-detail-container">
+      {showForm && (
+        <div className="floating-form-overlay" onClick={(e) => {
+          if (e.target.className === 'floating-form-overlay') {
+            setShowForm(false);
+          }
+        }}>
+          <div className="add-product-container">
+            <button 
+              className="close-form-button"
+              onClick={() => setShowForm(false)}
+            >
+              ×
+            </button>
+            <AddProduct onClose={() => setShowForm(false)} />
+          </div>
+        </div>
+      )}
+      
       <div className="product-detail">
         <div className="product-detail-image-container">
           <img 
@@ -177,7 +196,7 @@ const ProductDetailPage = () => {
             className="product-detail-image"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = '/placeholder-image.png';
+              e.target.src = '/placeholder-image.svg';
             }}
           />
           <button 
