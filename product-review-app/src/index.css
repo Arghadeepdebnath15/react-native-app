@@ -16,14 +16,19 @@ html {
   height: 100%;
   margin: 0;
   padding: 0;
+  /* Enable zooming */
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Mobile devices get auto scroll behavior */
 html.mobile-device {
   height: 100%;
   min-height: -webkit-fill-available;
-  /* Enable pull-to-refresh */
+  /* Enable pull-to-refresh and zooming */
   overscroll-behavior-y: auto;
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -37,8 +42,10 @@ body {
   width: 100%;
   min-height: 100%;
   position: relative;
-  /* Enable pull-to-refresh */
+  /* Enable pull-to-refresh and zooming */
   overscroll-behavior-y: auto;
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Snap points for scroll stopping - only for desktop */
@@ -58,11 +65,11 @@ body {
 /* Mobile-specific overrides */
 @media (max-width: 768px) {
   html, body {
-    /* Enable native touch behavior */
+    /* Enable native touch behavior and zooming */
     -webkit-overflow-scrolling: touch;
-    /* Enable pull-to-refresh */
     overscroll-behavior-y: auto;
-    touch-action: pan-x pan-y;
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-text-size-adjust: 100%;
   }
   
   /* Disable snap points on mobile */
@@ -74,6 +81,18 @@ body {
   .container, .products-grid, .review-list {
     scroll-snap-type: none;
     scroll-behavior: auto;
+  }
+
+  /* Ensure proper zoom behavior on mobile */
+  * {
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Prevent unwanted text resizing on iOS */
+  input, select, textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
   }
 }
 
@@ -92,12 +111,16 @@ div, section, article {
   backface-visibility: hidden;
   /* Basic performance optimizations */
   backface-visibility: hidden;
+  /* Enable zooming */
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 /* Optimize images */
 img {
   aspect-ratio: attr(width) / attr(height);
   image-rendering: -webkit-optimize-contrast;
+  /* Enable zooming on images */
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 code {

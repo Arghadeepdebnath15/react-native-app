@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.25, maximum-scale=5" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.25, maximum-scale=5, user-scalable=yes" />
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
@@ -38,6 +38,7 @@
         padding: 0;
         background-color: #f8f9fa;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        -webkit-text-size-adjust: 100%;
       }
       
       .initial-loading {
@@ -54,6 +55,7 @@
         scroll-behavior: auto !important;
         scroll-snap-type: none !important;
         -webkit-overflow-scrolling: auto !important;
+        -webkit-text-size-adjust: 100%;
       }
       
       /* Mobile devices get even more resets */
@@ -61,6 +63,26 @@
         scroll-behavior: auto !important;
         scroll-snap-type: none !important;
         -webkit-overflow-scrolling: touch !important;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      /* Prevent iOS from adjusting font sizes */
+      input, select, textarea {
+        font-size: 16px !important;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      /* Ensure proper zoom behavior */
+      * {
+        -webkit-text-size-adjust: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Prevent unwanted text resizing on iOS */
+      @supports (-webkit-touch-callout: none) {
+        body {
+          -webkit-text-size-adjust: 100%;
+        }
       }
     </style>
     

@@ -5,10 +5,12 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
   const [formData, setFormData] = useState({
     userName: '',
     rating: null,
-    comment: ''
+    comment: '',
+    photos: []
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   // Special handling for problematic products
   const isProblematicProduct = productName && 
@@ -20,7 +22,7 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
     }
   }, [productName, isProblematicProduct]);
 
-  const { userName, rating, comment } = formData;
+  const { userName, rating, comment, photos } = formData;
 
   const handleChange = (e) => {
     setFormData({
@@ -44,6 +46,57 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
     setHoveredRating(0);
   };
 
+  const handlePhotoUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploadingPhotos(true);
+    try {
+      const uploadedPhotos = await Promise.all(
+        files.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('upload_preset', 'rcwfhnbx');
+
+          const response = await fetch(
+            `https://api.cloudinary.com/v1_1/dbhl52bav/image/upload`,
+            {
+              method: 'POST',
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to upload photo');
+          }
+
+          const data = await response.json();
+          console.log('Uploaded photo URL:', data.secure_url); // Debug log
+          return data.secure_url;
+        })
+      );
+
+      console.log('All uploaded photos:', uploadedPhotos); // Debug log
+      setFormData(prev => ({
+        ...prev,
+        photos: [...prev.photos, ...uploadedPhotos]
+      }));
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      alert('Failed to upload photos. Please try again.');
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
+
+  const handleRemovePhoto = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      photos: prev.photos.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -57,14 +110,13 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
     if (isSubmitting) return;
     
     console.log(`Attempting to submit review for: ${productName}`);
+    console.log('Review data being submitted:', formData); // Debug log
     
     try {
       setIsSubmitting(true);
       
       // Add extra debugging for problematic products
       if (isProblematicProduct) {
-        console.log('Using special handling for problematic product');
-        
         // Add a small delay for problematic products
         // This can help with race conditions
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -77,7 +129,8 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
       setFormData({
         userName: '',
         rating: null,
-        comment: ''
+        comment: '',
+        photos: []
       });
       
       // Show success feedback
@@ -149,6 +202,35 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
             required
             placeholder="Share your thoughts about this product..."
           ></textarea>
+        </div>
+        <div className="form-group">
+          <label htmlFor="photos">Add Photos (Optional)</label>
+          <input
+            type="file"
+            id="photos"
+            name="photos"
+            accept="image/*"
+            multiple
+            onChange={handlePhotoUpload}
+            disabled={uploadingPhotos}
+          />
+          {uploadingPhotos && <p className="upload-status">Uploading photos...</p>}
+          {photos.length > 0 && (
+            <div className="photo-preview-container">
+              {photos.map((photo, index) => (
+                <div key={index} className="photo-preview">
+                  <img src={photo} alt={`Preview ${index + 1}`} />
+                  <button
+                    type="button"
+                    className="remove-photo"
+                    onClick={() => handleRemovePhoto(index)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <button 
           type="submit" 
