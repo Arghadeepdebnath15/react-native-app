@@ -1,4 +1,5 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 import ProductCard from '../components/ProductCard';
 import api from '../services/api';
@@ -6,6 +7,8 @@ import '../styles/AddProduct.css';
 
 const HomePage = ({ showForm, setShowForm }) => {
   const { products, loading, error, refreshProducts } = useContext(ProductContext);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const location = useLocation();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -19,6 +22,21 @@ const HomePage = ({ showForm, setShowForm }) => {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [imageError, setImageError] = useState(false);
+
+  // Get search query from URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const searchQuery = searchParams.get('search');
+    
+    if (searchQuery) {
+      const filtered = products.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    } else {
+      setFilteredProducts(products);
+    }
+  }, [location.search, products]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -322,14 +340,21 @@ const HomePage = ({ showForm, setShowForm }) => {
         </div>
       )}
 
-      <h1 style={{ textAlign: 'center', marginTop: '2rem' }}>Featured Products</h1>
-      {products.length === 0 ? (
+      <h1 style={{ textAlign: 'center', marginTop: '2rem' }}>
+        {location.search ? 'Search Results' : 'Featured Products'}
+      </h1>
+      
+      {filteredProducts.length === 0 ? (
         <div className="no-products">
-          <p>No products found. Please check back later.</p>
+          <p>
+            {location.search 
+              ? 'No products found matching your search. Please try a different search term.' 
+              : 'No products found. Please check back later.'}
+          </p>
         </div>
       ) : (
         <div className="products-grid">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
         </div>
