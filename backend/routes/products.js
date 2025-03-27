@@ -1,42 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
 const Product = require('../models/Product');
 const axios = require('axios');
-
-// Configure multer for handling file uploads
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function(req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: function(req, file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb(new Error('Only image files are allowed!'));
-  }
-});
-
-// Create uploads directory if it doesn't exist
-const fs = require('fs');
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
 
 // Basic URL validation
 const isValidUrl = (url) => {
@@ -48,28 +13,11 @@ const isValidUrl = (url) => {
   }
 };
 
-// Check if URL likely points to an image based on extension or content type
-const isLikelyImageUrl = (url) => {
-  // Common image extensions
-  const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico)$/i;
-  
+// Check if URL is from Cloudinary
+const isCloudinaryUrl = (url) => {
   try {
     const urlObj = new URL(url);
-    // Check pathname for image extension
-    if (imageExtensions.test(urlObj.pathname)) {
-      return true;
-    }
-    
-    // Check if URL contains image-related keywords
-    const urlString = url.toLowerCase();
-    if (urlString.includes('image') || 
-        urlString.includes('photo') || 
-        urlString.includes('picture') ||
-        urlString.includes('media')) {
-      return true;
-    }
-
-    return false;
+    return urlObj.hostname.includes('cloudinary.com');
   } catch (e) {
     return false;
   }
@@ -96,53 +44,37 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create a product with image upload or URL
-router.post('/', upload.single('image'), async (req, res) => {
+// Create a product
+router.post('/', async (req, res) => {
   try {
-    let imageUrl;
+    const { name, description, price, category, imageUrl } = req.body;
 
-    // Check if an image URL was provided
-    if (req.body.imageUrl) {
-      // Basic URL validation
-      if (!isValidUrl(req.body.imageUrl)) {
-        return res.status(400).json({ 
-          message: 'Please enter a valid URL' 
-        });
-      }
+    // Validate required fields
+    if (!name || !description || !price || !category || !imageUrl) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-      // Additional check for likely image URL
-      if (!isLikelyImageUrl(req.body.imageUrl)) {
-        return res.status(400).json({ 
-          message: 'The URL does not appear to be an image. Please check the URL and try again.' 
-        });
-      }
+    // Validate image URL
+    if (!isValidUrl(imageUrl)) {
+      return res.status(400).json({ message: 'Invalid image URL' });
+    }
 
-      imageUrl = req.body.imageUrl;
-    } 
-    // Otherwise use the uploaded file
-    else if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-    } else {
-      return res.status(400).json({ message: 'Either an image file or image URL is required' });
+    // Validate that the image URL is from Cloudinary
+    if (!isCloudinaryUrl(imageUrl)) {
+      return res.status(400).json({ message: 'Image must be uploaded to Cloudinary first' });
     }
 
     const product = new Product({
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      category: req.body.category,
-      imageUrl: imageUrl
+      name,
+      description,
+      price,
+      category,
+      imageUrl
     });
 
     const newProduct = await product.save();
     res.status(201).json(newProduct);
   } catch (err) {
-    // If there's an error and we uploaded a file, remove it
-    if (req.file) {
-      fs.unlink(req.file.path, (unlinkErr) => {
-        if (unlinkErr) console.error('Error removing uploaded file:', unlinkErr);
-      });
-    }
     res.status(400).json({ message: err.message });
   }
 });
@@ -153,9 +85,26 @@ router.post('/:id/reviews', async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
     
-    const { userName, rating, comment } = req.body;
+    const { userName, rating, comment, photos } = req.body;
     
-    product.reviews.push({ userName, rating, comment });
+    // Validate review data
+    if (!userName || !rating || !comment) {
+      return res.status(400).json({ message: 'Name, rating, and comment are required' });
+    }
+
+    // Validate photos if provided
+    if (photos && photos.length > 0) {
+      for (const photo of photos) {
+        if (!isValidUrl(photo)) {
+          return res.status(400).json({ message: 'Invalid photo URL' });
+        }
+        if (!isCloudinaryUrl(photo)) {
+          return res.status(400).json({ message: 'Photos must be uploaded to Cloudinary first' });
+        }
+      }
+    }
+    
+    product.reviews.push({ userName, rating, comment, photos: photos || [] });
     await product.save();
     
     res.status(201).json(product);
@@ -172,22 +121,11 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // If the product has an uploaded image (not a URL), delete it from the uploads folder
-    if (product.imageUrl && product.imageUrl.startsWith('/uploads/')) {
-      const imagePath = path.join(__dirname, '..', product.imageUrl);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
-
     await Product.findByIdAndDelete(req.params.id);
     res.json({ message: 'Product deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
-// Serve uploaded files statically
-router.use('/uploads', express.static('uploads'));
 
 module.exports = router; 

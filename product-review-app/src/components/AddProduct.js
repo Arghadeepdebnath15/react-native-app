@@ -24,14 +24,49 @@ const AddProduct = ({ onClose }) => {
     }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({
-        ...prev,
-        image: file,
-        imagePreview: URL.createObjectURL(file)
-      }));
+      try {
+        // Validate file size
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          throw new Error('Image must be less than 10MB');
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          throw new Error('Only image files are allowed');
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET);
+
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: 'POST',
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to upload image');
+        }
+
+        const data = await response.json();
+        console.log('Uploaded image URL:', data.secure_url);
+        
+        setFormData(prev => ({
+          ...prev,
+          image: data.secure_url,
+          imagePreview: data.secure_url
+        }));
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        setError(error.message || 'Failed to upload image. Please try again.');
+      }
     }
   };
 
@@ -41,20 +76,17 @@ const AddProduct = ({ onClose }) => {
     setError('');
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('price', formData.price);
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        price: formData.price,
+        imageUrl: formData.image
+      };
 
-      const response = await api.post('/products', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      console.log('Sending product data:', productData);
+      const response = await api.post('/products', productData);
+      console.log('Product added successfully:', response.data);
 
       if (response.data) {
         if (onClose) {
@@ -64,6 +96,7 @@ const AddProduct = ({ onClose }) => {
         }
       }
     } catch (err) {
+      console.error('Error adding product:', err);
       setError(err.response?.data?.message || 'Error adding product. Please try again.');
     } finally {
       setLoading(false);

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/ProductPage.css';
+import ReviewForm from '../components/ReviewForm';
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -26,7 +27,9 @@ const ProductPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        console.log('Fetching product with ID:', id);
         const response = await axios.get(`/api/products/${id}`);
+        console.log('Fetched product data:', response.data);
         setProduct(response.data);
         setEditForm({
           name: response.data.name,
@@ -45,6 +48,10 @@ const ProductPage = () => {
 
     fetchProduct();
   }, [id]);
+
+  useEffect(() => {
+    console.log('Product state updated:', product);
+  }, [product]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -209,65 +216,46 @@ const ProductPage = () => {
         </div>
       </div>
 
-      <div className="row mt-5">
-        <div className="col-12">
-          <h2>Reviews</h2>
-          {user ? (
-            <form onSubmit={handleReviewSubmit} className="review-form">
-              <div className="mb-3">
-                <label className="form-label">Rating</label>
-                <select
-                  className="form-control"
-                  value={review.rating}
-                  onChange={(e) => setReview({ ...review, rating: Number(e.target.value) })}
-                  required
-                >
-                  {[5, 4, 3, 2, 1].map((num) => (
-                    <option key={num} value={num}>
-                      {num} {num === 1 ? 'Star' : 'Stars'}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Comment</label>
-                <textarea
-                  className="form-control"
-                  value={review.comment}
-                  onChange={(e) => setReview({ ...review, comment: e.target.value })}
-                  required
-                />
-              </div>
-              {reviewError && <div className="text-danger mb-3">{reviewError}</div>}
-              {reviewSuccess && <div className="text-success mb-3">{reviewSuccess}</div>}
-              <button type="submit" className="btn btn-primary">Submit Review</button>
-            </form>
-          ) : (
-            <p>Please <a href="/login">login</a> to leave a review.</p>
-          )}
-
-          <div className="reviews-list">
-            {product.reviews.map((review) => (
-              <div key={review._id} className="review-item">
-                <div className="review-header">
-                  <div className="review-rating">
-                    {[...Array(5)].map((_, index) => (
-                      <i
-                        key={index}
-                        className={`bi bi-star${index < review.rating ? '-fill' : ''}`}
-                      />
-                    ))}
+      {!isEditing && product && (
+        <div className="review-section">
+          <h3>Reviews</h3>
+          {console.log('Rendering ReviewForm with product:', product)}
+          {product.reviews && product.reviews.length > 0 ? (
+            <div className="reviews-list">
+              {product.reviews.map((review, index) => (
+                <div key={index} className="review-card">
+                  <div className="review-header">
+                    <span className="reviewer-name">{review.userName}</span>
+                    <span className="review-rating">{'★'.repeat(review.rating)}</span>
                   </div>
-                  <div className="review-date">
-                    {new Date(review.date).toLocaleDateString()}
-                  </div>
+                  <p className="review-comment">{review.comment}</p>
+                  {review.photos && review.photos.length > 0 && (
+                    <div className="review-photos">
+                      {review.photos.map((photo, photoIndex) => (
+                        <img key={photoIndex} src={photo} alt={`Review photo ${photoIndex + 1}`} />
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <p className="review-comment">{review.comment}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p>No reviews yet. Be the first to review this product!</p>
+          )}
+          <ReviewForm 
+            productId={id} 
+            onReviewSubmitted={async (newReview) => {
+              try {
+                console.log('Review submitted, refreshing product data for ID:', id);
+                const response = await axios.get(`/api/products/${id}`);
+                setProduct(response.data);
+              } catch (error) {
+                console.error('Error refreshing product data:', error);
+              }
+            }} 
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 };

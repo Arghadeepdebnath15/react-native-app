@@ -49,15 +49,6 @@ const HomePage = ({ showForm, setShowForm }) => {
     }));
   };
 
-  const validateImageUrl = (url) => {
-    try {
-      new URL(url); // Only validate if it's a valid URL
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
   const handleImageTypeChange = (e) => {
     const useImageUrl = e.target.value === 'url';
     setFormData(prev => ({
@@ -113,40 +104,52 @@ const HomePage = ({ showForm, setShowForm }) => {
         return;
       }
 
-      if (formData.useImageUrl && !validateImageUrl(formData.imageUrl)) {
-        setFormError('Please enter a valid image URL');
-        setFormLoading(false);
-        return;
-      }
+      let imageUrl = formData.imageUrl;
 
-      // Create FormData object for API request
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('category', formData.category);
-
-      // Handle image upload
+      // Handle image upload to Cloudinary if a file was selected
       if (!formData.useImageUrl && formData.image) {
-        formDataToSend.append('image', formData.image);
-      } else if (formData.useImageUrl) {
-        formDataToSend.append('imageUrl', formData.imageUrl);
-      } else {
-        // No image provided
-        setFormError('Please provide an image or image URL');
-        setFormLoading(false);
-        return;
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', formData.image);
+          uploadFormData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET);
+
+          const uploadResponse = await fetch(
+            `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+              method: 'POST',
+              body: uploadFormData,
+            }
+          );
+
+          if (!uploadResponse.ok) {
+            throw new Error('Failed to upload image to Cloudinary');
+          }
+
+          const uploadData = await uploadResponse.json();
+          imageUrl = uploadData.secure_url;
+          console.log('Uploaded image URL:', imageUrl);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          setFormError('Failed to upload image. Please try again.');
+          setFormLoading(false);
+          return;
+        }
       }
 
-      // Send to your backend
-      const response = await fetch(`${api.defaults.baseURL}/products`, {
-        method: 'POST',
-        body: formDataToSend
-      });
+      // Create product data
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        category: formData.category,
+        imageUrl: imageUrl
+      };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create product');
+      // Send to backend
+      const response = await api.post('/products', productData);
+
+      if (!response.data) {
+        throw new Error('Failed to create product');
       }
 
       // Reset form and show success
@@ -250,7 +253,7 @@ const HomePage = ({ showForm, setShowForm }) => {
                   <div className="mt-2 small">
                     <strong>Troubleshooting:</strong>
                     <ul className="mb-0 ps-3">
-                      <li>Make sure you have an unsigned upload preset named 'product_review_app' in your Cloudinary account</li>
+                      <li>Make sure you have an unsigned upload preset named 'rcwfhnbx' in your Cloudinary account</li>
                       <li>Check that your image is less than 10MB</li>
                       <li>Try a different image format (JPG, PNG)</li>
                       <li>Use the Image URL option instead</li>
@@ -357,7 +360,7 @@ const HomePage = ({ showForm, setShowForm }) => {
                       <svg className="me-1" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                       </svg>
-                      Images are stored in your Cloudinary account. To make uploads work, please create an unsigned upload preset named 'product_review_app' in your Cloudinary dashboard.
+                      Images are stored in your Cloudinary account. To make uploads work, please create an unsigned upload preset named 'rcwfhnbx' in your Cloudinary dashboard.
                       <a href="https://cloudinary.com/console/settings/upload" target="_blank" rel="noopener noreferrer" className="ms-1 text-primary">
                         Cloudinary Upload Settings →
                       </a>
@@ -379,7 +382,7 @@ const HomePage = ({ showForm, setShowForm }) => {
         </div>
       )}
 
-      <h1 style={{ textAlign: 'center', marginTop: '2rem' }}>
+      <h1 style={{ textAlign: 'center', marginTop: '1rem' }}>
         {location.search ? 'Search Results' : 'Featured Products'}
       </h1>
       

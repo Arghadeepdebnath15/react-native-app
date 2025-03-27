@@ -6,9 +6,8 @@ const getApiUrl = () => {
     // In production, use the production URL
     return process.env.REACT_APP_API_URL || 'https://newrepo-pk31.onrender.com/api';
   } else {
-    // In development, use the local backend
-    const currentHostname = window.location.hostname;
-    return `http://${currentHostname}:8080/api`;
+    // In development, use localhost
+    return 'http://localhost:8080/api';
   }
 };
 
@@ -24,20 +23,6 @@ const api = axios.create({
   // Increase timeout for slow connections
   timeout: 10000,
 });
-
-// Helper function to determine if a product is problematic
-const isProblematicProduct = (productId, productName = '') => {
-  if (productName && (productName.includes('Headphone') || productName.includes('Watch'))) {
-    return true;
-  }
-  // If we don't have a name but have an ID, try to detect based on ID
-  if (productId && typeof productId === 'string') {
-    // Log the ID for debugging
-    console.log('Checking if product ID is problematic:', productId);
-    return true;
-  }
-  return false;
-};
 
 // API methods for products
 export const fetchProducts = async () => {
@@ -67,54 +52,67 @@ export const addReview = async (productId, reviewData) => {
     console.log('API sending review to server for product ID:', productId);
     console.log('Review data:', reviewData);
     
-    // Special handling for problematic products
-    const problematic = isProblematicProduct(productId);
-    
     // Ensure consistent ID format
     const idToUse = productId ? productId.toString() : productId;
     
-    if (problematic) {
-      console.log('Using special handling for problematic product with ID:', idToUse);
-      
-      // Apply multiple attempts for problematic products
-      let attempts = 0;
-      const maxAttempts = 3;
-      let lastError = null;
-      
-      while (attempts < maxAttempts) {
-        try {
-          attempts++;
-          console.log(`Attempt ${attempts} for problematic product`);
-          
-          // Add a small delay between attempts
-          if (attempts > 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-          
-          const response = await api.post(`/products/${idToUse}/reviews`, reviewData);
-          console.log('API received response:', response.data);
-          return response.data;
-        } catch (err) {
-          console.error(`Attempt ${attempts} failed:`, err);
-          lastError = err;
-          
-          // If this is not the last attempt, continue to the next one
-          if (attempts < maxAttempts) {
-            continue;
-          }
-          
-          // Otherwise, re-throw the error
-          throw lastError;
-        }
-      }
-    } else {
-      // Normal handling for non-problematic products
-      const response = await api.post(`/products/${idToUse}/reviews`, reviewData);
-      console.log('API received response:', response.data);
-      return response.data;
+    // Validate the review data before sending
+    if (!idToUse) {
+      throw new Error('Product ID is required');
     }
+    
+    if (!reviewData || typeof reviewData !== 'object') {
+      throw new Error('Invalid review data format');
+    }
+    
+    // Validate required fields
+    const requiredFields = ['userName', 'rating', 'comment'];
+    const missingFields = requiredFields.filter(field => !reviewData[field]);
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+    
+    // Ensure rating is a number and within valid range
+    const rating = Number(reviewData.rating);
+    if (isNaN(rating) || rating < 1 || rating > 5) {
+      throw new Error('Rating must be a number between 1 and 5');
+    }
+    
+    // Prepare the review data
+    const preparedReviewData = {
+      userName: reviewData.userName.trim(),
+      rating: rating,
+      comment: reviewData.comment.trim(),
+      photos: Array.isArray(reviewData.photos) ? reviewData.photos : []
+    };
+    
+    // Log the full request details
+    console.log('API - Full request details:', {
+      url: `/products/${idToUse}/reviews`,
+      method: 'POST',
+      data: preparedReviewData,
+      timestamp: new Date().toISOString()
+    });
+    
+    const response = await api.post(`/products/${idToUse}/reviews`, preparedReviewData);
+    console.log('API received response:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error adding review:', error);
+    
+    // Log the full error details
+    if (error.response) {
+      console.error('Error response:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+      
+      // If the server provided a specific error message, use it
+      if (error.response.data && error.response.data.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
     throw error;
   }
 };

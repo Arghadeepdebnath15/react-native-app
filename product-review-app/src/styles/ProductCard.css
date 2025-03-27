@@ -77,12 +77,12 @@
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s;
-  background-color: #3498db;
+  background-color: #04446f;
   color: white;
 }
 
 .product-actions button:hover {
-  background-color: #2980b9;
+  background-color: #07293f;
 }
 
 .delete-button {

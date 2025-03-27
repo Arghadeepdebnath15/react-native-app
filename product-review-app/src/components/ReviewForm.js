@@ -1,45 +1,39 @@
 import React, { useState, useEffect } from 'react';
-// Test comment to verify GitHub sync is working
+import '../styles/ReviewForm.css';
 
-const ReviewForm = ({ onSubmitReview, productName = '' }) => {
+const ReviewForm = ({ productId, onReviewSubmitted }) => {
   const [formData, setFormData] = useState({
     userName: '',
     rating: null,
     comment: '',
     photos: []
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [uploadedPhotos, setUploadedPhotos] = useState([]);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-
-  // Special handling for problematic products
-  const isProblematicProduct = productName && 
-    (productName.includes('Headphone') || productName.includes('Watch'));
 
   useEffect(() => {
-    if (isProblematicProduct) {
-      console.log(`Special handling enabled for problematic product: ${productName}`);
-    }
-  }, [productName, isProblematicProduct]);
+    console.log('ReviewForm - productId prop changed:', productId);
+  }, [productId]);
 
-  const { userName, rating, comment, photos } = formData;
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.name === 'rating' ? parseInt(e.target.value) : e.target.value
-    });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleRatingChange = (newRating) => {
-    setFormData({
-      ...formData,
-      rating: newRating
-    });
+  const handleRatingClick = (rating) => {
+    setFormData(prev => ({
+      ...prev,
+      rating: rating
+    }));
   };
 
-  const handleRatingHover = (hoveredValue) => {
-    setHoveredRating(hoveredValue);
+  const handleRatingHover = (rating) => {
+    setHoveredRating(rating);
   };
 
   const handleRatingLeave = () => {
@@ -48,18 +42,25 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+    if (files.length > 0) {
+      try {
+        // Validate file sizes
+        for (const file of files) {
+          if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            throw new Error('Each photo must be less than 10MB');
+          }
+          if (!file.type.startsWith('image/')) {
+            throw new Error('Only image files are allowed');
+          }
+        }
 
-    setUploadingPhotos(true);
-    try {
-      const uploadedPhotos = await Promise.all(
-        files.map(async (file) => {
+        const uploadPromises = files.map(async (file) => {
           const formData = new FormData();
           formData.append('file', file);
-          formData.append('upload_preset', 'rcwfhnbx');
+          formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET);
 
           const response = await fetch(
-            `https://api.cloudinary.com/v1_1/dbhl52bav/image/upload`,
+            `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
             {
               method: 'POST',
               body: formData,
@@ -68,176 +69,194 @@ const ReviewForm = ({ onSubmitReview, productName = '' }) => {
 
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to upload photo');
+            throw new Error(errorData.message || 'Failed to upload image');
           }
 
           const data = await response.json();
-          console.log('Uploaded photo URL:', data.secure_url); // Debug log
+          console.log('Uploaded photo URL:', data.secure_url);
           return data.secure_url;
-        })
-      );
+        });
 
-      console.log('All uploaded photos:', uploadedPhotos); // Debug log
-      setFormData(prev => ({
-        ...prev,
-        photos: [...prev.photos, ...uploadedPhotos]
-      }));
-    } catch (error) {
-      console.error('Error uploading photos:', error);
-      alert('Failed to upload photos. Please try again.');
-    } finally {
-      setUploadingPhotos(false);
+        const uploadedUrls = await Promise.all(uploadPromises);
+        console.log('All uploaded photo URLs:', uploadedUrls);
+        
+        setUploadedPhotos(prev => [...prev, ...uploadedUrls]);
+        setFormData(prev => ({
+          ...prev,
+          photos: [...prev.photos, ...uploadedUrls]
+        }));
+      } catch (error) {
+        console.error('Error uploading photos:', error);
+        setError(error.message || 'Failed to upload photos. Please try again.');
+      }
     }
-  };
-
-  const handleRemovePhoto = (indexToRemove) => {
-    setFormData(prev => ({
-      ...prev,
-      photos: prev.photos.filter((_, index) => index !== indexToRemove)
-    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Check if rating is selected
-    if (rating === null) {
-      alert('Please select a rating before submitting your review');
-      return;
-    }
-    
-    // Prevent multiple submissions
-    if (isSubmitting) return;
-    
-    console.log(`Attempting to submit review for: ${productName}`);
-    console.log('Review data being submitted:', formData); // Debug log
-    
+    setLoading(true);
+    setError('');
+
     try {
-      setIsSubmitting(true);
+      console.log('ReviewForm - Product ID received:', productId);
+      if (!productId) {
+        console.error('ReviewForm - Product ID is missing');
+        throw new Error('Product ID is required');
+      }
+
+      // Validate the form data before submission
+      if (!formData.userName.trim()) {
+        throw new Error('Please enter your name');
+      }
+      if (!formData.comment.trim()) {
+        throw new Error('Please enter your review');
+      }
+      if (!formData.rating || formData.rating < 1 || formData.rating > 5) {
+        throw new Error('Please select a valid rating');
+      }
+
+      // Prepare the review data with proper types
+      const reviewData = {
+        userName: formData.userName.trim(),
+        rating: parseInt(formData.rating, 10),
+        comment: formData.comment.trim(),
+        photos: Array.isArray(formData.photos) ? formData.photos : []
+      };
+
+      // Log the review data before submission
+      console.log('ReviewForm - Prepared review data:', reviewData);
+
+      // Call the onReviewSubmitted callback with the review data
+      if (onReviewSubmitted) {
+        const response = await onReviewSubmitted(reviewData);
+        console.log('ReviewForm - Review submitted successfully:', response);
+
+        // Reset form
+        if (response) {
+          setFormData({
+            userName: '',
+            rating: null,
+            comment: '',
+            photos: []
+          });
+          setUploadedPhotos([]);
+        }
+      }
+    } catch (err) {
+      console.error('ReviewForm - Error submitting review:', err);
       
-      // Add extra debugging for problematic products
-      if (isProblematicProduct) {
-        // Add a small delay for problematic products
-        // This can help with race conditions
-        await new Promise(resolve => setTimeout(resolve, 500));
+      // Extract the error message from the response
+      let errorMessage = 'Error submitting review. Please try again.';
+      if (err.response) {
+        console.error('Error response data:', err.response.data);
+        errorMessage = err.response.data.message || err.response.data.error || errorMessage;
+      } else if (err.request) {
+        errorMessage = 'No response received from server. Please check your connection.';
+      } else {
+        errorMessage = err.message || errorMessage;
       }
       
-      // Submit the review
-      await onSubmitReview(formData);
-      
-      // Reset form after submission
-      setFormData({
-        userName: '',
-        rating: null,
-        comment: '',
-        photos: []
-      });
-      
-      // Show success feedback
-      alert(`Review for ${productName} submitted successfully!`);
-    } catch (err) {
-      console.error(`Error submitting review for ${productName}:`, err);
-      alert(`Failed to submit review for ${productName}. Please try again.`);
+      setError(errorMessage);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
-  };
-
-  // Star rating component
-  const renderStarRating = () => {
-    const stars = [];
-    const activeRating = hoveredRating || rating || 0;
-    
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span 
-          key={i} 
-          className={`star-rating-input ${i <= activeRating ? 'star-filled' : 'star-empty'}`}
-          onClick={() => handleRatingChange(i)}
-          onMouseEnter={() => handleRatingHover(i)}
-          onMouseLeave={handleRatingLeave}
-        >
-          ★
-        </span>
-      );
-    }
-    
-    return stars;
   };
 
   return (
-    <div className="review-form">
-      <h3>Write a Review for {productName}</h3>
-      <form onSubmit={handleSubmit}>
+    <div className="review-form-section">
+      <h3>Write a Review</h3>
+      {error && <div className="error-message">{error}</div>}
+      <form onSubmit={handleSubmit} className="review-form">
         <div className="form-group">
           <label htmlFor="userName">Your Name</label>
           <input
             type="text"
             id="userName"
             name="userName"
-            value={userName}
-            onChange={handleChange}
+            value={formData.userName}
+            onChange={handleInputChange}
             required
-            autoComplete="name"
-            placeholder="Enter your name"
           />
         </div>
+
         <div className="form-group">
-          <label htmlFor="rating">Rating</label>
+          <label>Rating</label>
           <div className="star-rating-container">
-            {renderStarRating()}
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span
+                key={star}
+                className={`star-rating-input ${star <= (hoveredRating || formData.rating) ? 'star-filled' : 'star-empty'}`}
+                onClick={() => handleRatingClick(star)}
+                onMouseEnter={() => handleRatingHover(star)}
+                onMouseLeave={handleRatingLeave}
+              >
+                ★
+              </span>
+            ))}
             <span className="rating-text">
-              {rating ? `(${rating} ${rating === 1 ? 'Star' : 'Stars'})` : '(Select a rating)'}
+              {formData.rating ? `${formData.rating} ${formData.rating === 1 ? 'star' : 'stars'}` : 'Select a rating'}
             </span>
           </div>
         </div>
+
         <div className="form-group">
           <label htmlFor="comment">Your Review</label>
           <textarea
             id="comment"
             name="comment"
-            rows="4"
-            value={comment}
-            onChange={handleChange}
+            value={formData.comment}
+            onChange={handleInputChange}
             required
-            placeholder="Share your thoughts about this product..."
-          ></textarea>
+          />
         </div>
+
         <div className="form-group">
           <label htmlFor="photos">Add Photos (Optional)</label>
           <input
             type="file"
             id="photos"
             name="photos"
+            onChange={handlePhotoUpload}
             accept="image/*"
             multiple
-            onChange={handlePhotoUpload}
-            disabled={uploadingPhotos}
           />
-          {uploadingPhotos && <p className="upload-status">Uploading photos...</p>}
-          {photos.length > 0 && (
-            <div className="photo-preview-container">
-              {photos.map((photo, index) => (
-                <div key={index} className="photo-preview">
-                  <img src={photo} alt={`Preview ${index + 1}`} />
+        </div>
+
+        {uploadedPhotos.length > 0 && (
+          <div className="uploaded-photos">
+            <h4>Uploaded Photos:</h4>
+            <div className="photo-grid">
+              {uploadedPhotos.map((url, index) => (
+                <div key={index} className="photo-item">
+                  <img 
+                    src={url} 
+                    alt={`Review content ${index + 1}`}
+                    onError={(e) => {
+                      console.error('Error loading image:', url);
+                      e.target.src = '/placeholder-image.svg';
+                    }}
+                  />
                   <button
                     type="button"
+                    onClick={() => {
+                      setUploadedPhotos(prev => prev.filter((_, i) => i !== index));
+                      setFormData(prev => ({
+                        ...prev,
+                        photos: prev.photos.filter((_, i) => i !== index)
+                      }));
+                    }}
                     className="remove-photo"
-                    onClick={() => handleRemovePhoto(index)}
                   >
-                    ×
+                    Remove
                   </button>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-        <button 
-          type="submit" 
-          className={`submit-btn ${isProblematicProduct ? 'submit-btn-special' : ''}`}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit Review'}
+          </div>
+        )}
+
+        <button type="submit" disabled={loading}>
+          {loading ? 'Submitting...' : 'Submit Review'}
         </button>
       </form>
     </div>

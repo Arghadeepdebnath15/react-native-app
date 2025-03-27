@@ -5,6 +5,7 @@ import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
 import { getImageUrl } from '../utils/imageUtils';
 import AddProduct from '../components/AddProduct';
+import SuccessPopup from '../components/SuccessPopup';
 
 const ProductDetailPage = ({ showForm, setShowForm }) => {
   const { id } = useParams();
@@ -13,6 +14,8 @@ const ProductDetailPage = ({ showForm, setShowForm }) => {
   const [loading, setLoading] = useState(true);
   const [submitError, setSubmitError] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const reviewFormRef = useRef(null);
   const shouldScrollToTop = useRef(sessionStorage.getItem('scrollToTop') === 'true');
 
@@ -80,6 +83,8 @@ const ProductDetailPage = ({ showForm, setShowForm }) => {
       
       setProduct(updatedProduct);
       setShowReviewForm(false);
+      setSuccessMessage('Review submitted successfully! 🎉');
+      setShowSuccess(true);
       
       // Scroll to review list after submission
       if (reviewFormRef.current) {
@@ -170,6 +175,13 @@ const ProductDetailPage = ({ showForm, setShowForm }) => {
 
   return (
     <div className="container product-detail-container">
+      {showSuccess && (
+        <SuccessPopup
+          message={successMessage}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
+      
       {showForm && (
         <div className="floating-form-overlay" onClick={(e) => {
           if (e.target.className === 'floating-form-overlay') {
@@ -241,7 +253,10 @@ const ProductDetailPage = ({ showForm, setShowForm }) => {
         
         {showReviewForm && (
           <div className="review-form-container">
-            <ReviewForm onSubmitReview={handleSubmitReview} productName={product.name} />
+            <ReviewForm 
+              productId={product._id} 
+              onReviewSubmitted={handleSubmitReview}
+            />
           </div>
         )}
         
