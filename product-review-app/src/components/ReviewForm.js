@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/ReviewForm.css';
 
-// Temporary hardcoded values as fallback
-const CLOUDINARY_CLOUD_NAME = 'dbhl52bav';
-const CLOUDINARY_UPLOAD_PRESET = 'rcwfhnbx';
+// Debug logging for environment variables
+console.log('Environment Variables:', {
+  cloudName: process.env.REACT_APP_CLOUDINARY_CLOUD_NAME,
+  uploadPreset: process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET
+});
+
+// Fallback values
+const CLOUDINARY_CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'dbhl52bav';
+const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET || 'rcwfhnbx';
 
 const ReviewForm = ({ productId, onReviewSubmitted }) => {
   const [formData, setFormData] = useState({
@@ -62,6 +68,11 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
           const formData = new FormData();
           formData.append('file', file);
           formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+          console.log('Uploading to Cloudinary with:', {
+            cloudName: CLOUDINARY_CLOUD_NAME,
+            uploadPreset: CLOUDINARY_UPLOAD_PRESET
+          });
 
           const response = await fetch(
             `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
