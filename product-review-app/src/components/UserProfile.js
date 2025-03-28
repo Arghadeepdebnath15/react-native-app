@@ -18,6 +18,11 @@ const UserProfile = () => {
 
   useEffect(() => {
     const loadProfile = async () => {
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const userProfile = await getUserProfile(currentUser.uid);
         setProfile(userProfile);
@@ -35,9 +40,7 @@ const UserProfile = () => {
       }
     };
 
-    if (currentUser) {
-      loadProfile();
-    }
+    loadProfile();
   }, [currentUser]);
 
   const handleChange = (e) => {
@@ -50,6 +53,8 @@ const UserProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!currentUser) return;
+    
     setError('');
     try {
       await updateUserProfile(currentUser.uid, formData);
@@ -67,6 +72,10 @@ const UserProfile = () => {
 
   if (error) {
     return <div className="profile-error">{error}</div>;
+  }
+
+  if (!currentUser) {
+    return <div className="profile-error">Please log in to view your profile.</div>;
   }
 
   return (
@@ -116,48 +125,29 @@ const UserProfile = () => {
             />
           </div>
           <div className="form-actions">
-            <button type="submit" className="save-button">Save Changes</button>
-            <button
-              type="button"
-              className="cancel-button"
-              onClick={() => setIsEditing(false)}
-            >
-              Cancel
-            </button>
+            <button type="submit">Save Changes</button>
+            <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
           </div>
         </form>
       ) : (
         <div className="profile-info">
-          <div className="profile-field">
+          <div className="info-group">
             <label>Name</label>
-            <p>{profile?.name}</p>
+            <p>{profile?.name || 'Not set'}</p>
           </div>
-          <div className="profile-field">
+          <div className="info-group">
             <label>Email</label>
-            <p>{profile?.email}</p>
+            <p>{profile?.email || 'Not set'}</p>
           </div>
-          <div className="profile-field">
+          <div className="info-group">
             <label>Phone</label>
-            <p>{profile?.phone || 'Not provided'}</p>
+            <p>{profile?.phone || 'Not set'}</p>
           </div>
-          <div className="profile-field">
+          <div className="info-group">
             <label>Address</label>
-            <p>{profile?.address || 'Not provided'}</p>
+            <p>{profile?.address || 'Not set'}</p>
           </div>
-          <div className="profile-field">
-            <label>Member Since</label>
-            <p>{new Date(profile?.createdAt).toLocaleDateString()}</p>
-          </div>
-          <div className="profile-field">
-            <label>Last Login</label>
-            <p>{new Date(profile?.lastLogin).toLocaleDateString()}</p>
-          </div>
-          <button
-            className="edit-button"
-            onClick={() => setIsEditing(true)}
-          >
-            Edit Profile
-          </button>
+          <button onClick={() => setIsEditing(true)}>Edit Profile</button>
         </div>
       )}
     </div>
