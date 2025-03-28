@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/ReviewForm.css';
 
+// Temporary hardcoded values as fallback
+const CLOUDINARY_CLOUD_NAME = 'dbhl52bav';
+const CLOUDINARY_UPLOAD_PRESET = 'rcwfhnbx';
+
 const ReviewForm = ({ productId, onReviewSubmitted }) => {
   const [formData, setFormData] = useState({
     userName: '',
@@ -57,10 +61,10 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
         const uploadPromises = files.map(async (file) => {
           const formData = new FormData();
           formData.append('file', file);
-          formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET);
+          formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
           const response = await fetch(
-            `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
             {
               method: 'POST',
               body: formData,
