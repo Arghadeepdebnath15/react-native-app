@@ -19,8 +19,6 @@ const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const reviewFormRef = useRef(null);
-  const shouldScrollToTop = useRef(sessionStorage.getItem('scrollToTop') === 'true');
-  const [selectedReview, setSelectedReview] = useState(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
