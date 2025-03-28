@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const ReviewList = ({ reviews }) => {
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -22,70 +22,54 @@ const ReviewList = ({ reviews }) => {
     return stars;
   };
 
-  const handlePhotoClick = (photo) => {
-    setSelectedPhoto(photo);
-  };
-
-  const handleClosePhoto = () => {
-    setSelectedPhoto(null);
-  };
-
-  // Debug log to check reviews data
-  console.log('Reviews data:', reviews);
-
   return (
-    <div className="review-list">
-      {reviews.length === 0 ? (
-        <p>No reviews yet. Be the first to leave a review!</p>
-      ) : (
-        reviews.map((review, index) => {
-          // Debug log for each review
-          console.log(`Review ${index} photos:`, review.photos);
-          
-          return (
-            <div key={index} className="review-card">
-              <div className="review-header">
-                <span className="review-user">{review.userName}</span>
-                <span className="review-date">{formatDate(review.date)}</span>
+    <div className="reviews-grid">
+      {reviews.map((review, index) => (
+        <div 
+          key={index} 
+          className="review-card"
+          onClick={() => setSelectedReview(review)}
+        >
+          <div className="review-header">
+            <span className="review-author">{review.userName}</span>
+            <span className="review-date">
+              {new Date(review.date).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="review-rating">
+            {renderStars(review.rating)}
+          </div>
+          {review.title && (
+            <h3 className="review-title">{review.title}</h3>
+          )}
+          <p className="review-content">{review.comment}</p>
+        </div>
+      ))}
+
+      {selectedReview && (
+        <div className="review-detail-modal" onClick={() => setSelectedReview(null)}>
+          <div className="review-detail-content" onClick={e => e.stopPropagation()}>
+            <button className="review-detail-close" onClick={() => setSelectedReview(null)}>×</button>
+            <div className="review-detail-header">
+              <h3 className="review-detail-title">{selectedReview.title}</h3>
+              <div className="review-detail-meta">
+                <span className="review-author">{selectedReview.userName}</span>
+                <span className="review-date">
+                  {new Date(selectedReview.date).toLocaleDateString()}
+                </span>
               </div>
-              <div className="review-rating">{renderStars(review.rating)}</div>
-              <div className="review-content">
-                <p className="review-comment">{review.comment}</p>
-                {review.photos && review.photos.length > 0 && (
-                  <div className="review-photos">
-                    {review.photos.map((photo, photoIndex) => (
-                      <div key={photoIndex} className="review-photo" onClick={() => handlePhotoClick(photo)}>
-                        <img 
-                          src={photo} 
-                          alt={`Review ${photoIndex + 1} by ${review.userName}`}
-                          onError={(e) => {
-                            console.error('Error loading image:', photo);
-                            e.target.src = '/placeholder-image.svg';
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="review-rating">
+                {renderStars(selectedReview.rating)}
               </div>
             </div>
-          );
-        })
-      )}
-
-      {/* Photo Modal */}
-      {selectedPhoto && (
-        <div className="photo-modal" onClick={handleClosePhoto}>
-          <div className="photo-modal-content" onClick={e => e.stopPropagation()}>
-            <img 
-              src={selectedPhoto} 
-              alt={`Review by ${reviews.find(r => r.photos?.includes(selectedPhoto))?.userName || 'User'}`}
-              onError={(e) => {
-                console.error('Error loading modal image:', selectedPhoto);
-                e.target.src = '/placeholder-image.svg';
-              }}
-            />
-            <button className="close-modal" onClick={handleClosePhoto}>×</button>
+            <p>{selectedReview.comment}</p>
+            {selectedReview.photos && selectedReview.photos.length > 0 && (
+              <div className="review-photos">
+                {selectedReview.photos.map((photo, index) => (
+                  <img key={index} src={photo} alt={`Review photo ${index + 1}`} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

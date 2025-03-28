@@ -93,7 +93,7 @@ html {
   width: 100%;
   height: 80px;
   z-index: 1000;
-  border-bottom: 2px solid #ccc;
+  border-bottom: 2px solid #fefefe;
   overflow: hidden;
   max-width: 100%;
   margin: 0;

@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
 import './styles/fixes.css';
 import HomePage from './pages/HomePage';
-import ProductDetailPage from './pages/ProductDetailPage';
+import ProductDetailsEnhanced from './pages/ProductDetailsEnhanced';
 import AddProduct from './components/AddProduct';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -26,7 +26,7 @@ function App() {
             <main className="container">
               <Routes>
                 <Route path="/" element={<HomePage showForm={showAddProductForm} setShowForm={setShowAddProductForm} />} />
-                <Route path="/product/:id" element={<ProductDetailPage showForm={showAddProductForm} setShowForm={setShowAddProductForm} />} />
+                <Route path="/product/:id" element={<ProductDetailsEnhanced showForm={showAddProductForm} setShowForm={setShowAddProductForm} />} />
                 <Route path="/add-product" element={<AddProduct />} />
               </Routes>
             </main>
