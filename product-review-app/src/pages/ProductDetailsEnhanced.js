@@ -4,7 +4,6 @@ import { ProductContext } from '../context/ProductContext';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
 import { getImageUrl } from '../utils/imageUtils';
-import AddProduct from '../components/AddProduct';
 import SuccessPopup from '../components/SuccessPopup';
 import '../styles/ProductDetailsEnhanced.css';
 

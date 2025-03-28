@@ -3,12 +3,6 @@ import React, { useState } from 'react';
 const ReviewList = ({ reviews }) => {
   const [selectedReview, setSelectedReview] = useState(null);
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
   // Generate star rating display
   const renderStars = (rating) => {
     const stars = [];
@@ -66,7 +60,7 @@ const ReviewList = ({ reviews }) => {
             {selectedReview.photos && selectedReview.photos.length > 0 && (
               <div className="review-photos">
                 {selectedReview.photos.map((photo, index) => (
-                  <img key={index} src={photo} alt={`Review photo ${index + 1}`} />
+                  <img key={index} src={photo} alt={`Review ${index + 1}`} />
                 ))}
               </div>
             )}
