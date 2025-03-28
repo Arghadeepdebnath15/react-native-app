@@ -51,14 +51,13 @@
 
 button[type="submit"] {
   width: 100%;
-  padding: 0.2rem;
+  padding: 0.6rem; /* Increased height of the login button */
   background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 50px;
   font-size: 1rem;
   font-weight: 200;
-  width: 9%;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -173,4 +172,4 @@ button[type="submit"]:disabled {
     width: 16px;
     height: 16px;
   }
-} 
+}
