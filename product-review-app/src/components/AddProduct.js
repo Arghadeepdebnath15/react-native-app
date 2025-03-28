@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import '../styles/AddProduct.css';
 
+// Hardcoded Cloudinary values for testing
+const CLOUDINARY_CLOUD_NAME = 'dbhl52bav';
+const CLOUDINARY_UPLOAD_PRESET = 'rcwfhnbx';
+
 const AddProduct = ({ onClose }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -40,10 +44,10 @@ const AddProduct = ({ onClose }) => {
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
         const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
           {
             method: 'POST',
             body: formData,

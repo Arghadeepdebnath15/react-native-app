@@ -7,9 +7,9 @@ console.log('Environment Variables:', {
   uploadPreset: process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET
 });
 
-// Fallback values
-const CLOUDINARY_CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'dbhl52bav';
-const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET || 'rcwfhnbx';
+// Hardcoded Cloudinary values for testing
+const CLOUDINARY_CLOUD_NAME = 'dbhl52bav';
+const CLOUDINARY_UPLOAD_PRESET = 'rcwfhnbx';
 
 const ReviewForm = ({ productId, onReviewSubmitted }) => {
   const [formData, setFormData] = useState({
