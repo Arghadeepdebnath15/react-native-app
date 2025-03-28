@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 import { useTheme } from '../context/ThemeContext';
 import { getImageUrl } from '../utils/imageUtils';
+import { useAuth } from '../contexts/AuthContext';
 import '../styles/Navbar.css';
 
 const Navbar = ({ onAddProductClick }) => {
@@ -12,6 +13,7 @@ const Navbar = ({ onAddProductClick }) => {
   const { products } = useContext(ProductContext);
   const { isDarkMode, toggleTheme } = useTheme();
   const searchRef = useRef(null);
+  const { currentUser, logout } = useAuth();
 
   // Handle click outside search suggestions
   useEffect(() => {
@@ -68,6 +70,15 @@ const Navbar = ({ onAddProductClick }) => {
     return [...exactMatches, ...startingMatches, ...containingMatches].slice(0, 8);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
+  };
+
   return (
     <nav className="navbar">
       <div className="nav-container">
@@ -116,13 +127,26 @@ const Navbar = ({ onAddProductClick }) => {
           </form>
         </div>
         <div className="nav-right">
-          <button 
-            className="add-product-btn" 
-            onClick={onAddProductClick}
-            aria-label="Add new product"
-          >
-            Add Product
-          </button>
+          {currentUser && (
+            <>
+              <button 
+                className="add-product-btn" 
+                onClick={onAddProductClick}
+                aria-label="Add new product"
+              >
+                Add Product
+              </button>
+              <div className="user-section">
+                <span className="user-email">{currentUser.email}</span>
+                <button 
+                  className="logout-button"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
       {showSuggestions && searchTerm && (

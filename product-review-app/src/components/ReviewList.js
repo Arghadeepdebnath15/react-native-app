@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const ReviewList = ({ reviews }) => {
   const [selectedReview, setSelectedReview] = useState(null);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedReview && modalRef.current) {
+      modalRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [selectedReview]);
 
   // Generate star rating display
   const renderStars = (rating) => {
@@ -42,7 +49,7 @@ const ReviewList = ({ reviews }) => {
 
       {selectedReview && (
         <div className="review-detail-modal" onClick={() => setSelectedReview(null)}>
-          <div className="review-detail-content" onClick={e => e.stopPropagation()}>
+          <div className="review-detail-content" onClick={e => e.stopPropagation()} ref={modalRef}>
             <button className="review-detail-close" onClick={() => setSelectedReview(null)}>×</button>
             <div className="review-detail-header">
               <h3 className="review-detail-title">{selectedReview.title}</h3>

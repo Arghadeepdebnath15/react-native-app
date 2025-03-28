@@ -146,7 +146,7 @@
 }
 
 .search-button {
-  padding: 0.5rem;
+  padding: 0.3rem;
   border: none;
   background: none;
   color: var(--text-color);
@@ -155,20 +155,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
+  transition: color 0.2s ease;
   border-radius: 50%;
   position: relative;
   z-index: 1;
-  width: 50px;
+  width: 32px;
+  margin-right: 4px;
 }
 
 .search-button:hover {
-  background-color: var(--hover-bg);
+  color: var(--primary-color);
 }
 
 .search-icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   fill: currentColor;
   display: flex;
   align-items: center;
@@ -316,7 +317,13 @@
   }
 
   .search-button {
-    width: 40px;
+    width: 28px;
+    padding: 0.25rem;
+  }
+
+  .search-icon {
+    width: 14px;
+    height: 14px;
   }
 
   .nav-right {
@@ -381,7 +388,13 @@
   }
 
   .search-button {
-    width: 36px;
+    width: 24px;
+    padding: 0.2rem;
+  }
+
+  .search-icon {
+    width: 12px;
+    height: 12px;
   }
 
   .nav-right {
@@ -394,5 +407,51 @@
     font-size: 0.75rem;
     height: 28px;
     margin-right: 8px;
+  }
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 1rem;
+}
+
+.user-email {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.logout-button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .user-section {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .user-email {
+    font-size: 0.8rem;
+  }
+
+  .logout-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 } 
