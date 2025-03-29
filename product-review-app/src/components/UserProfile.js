@@ -78,7 +78,18 @@ const UserProfile = () => {
     return <div className="profile-error">Please log in to view your profile.</div>;
   }
 
-  return (
+    <button 
+      onClick={async () => {
+        await logout(); // Call the logout function
+      }} 
+
+      style={{ position: 'absolute', top: '10px', right: '10px' }} // Logout button positioned at the top right
+    >
+      Logout
+    </button>
+
+    return (
+
     <div className="user-profile">
       <h2>User Profile</h2>
       {isEditing ? (
@@ -154,4 +165,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile; 
+export default UserProfile;

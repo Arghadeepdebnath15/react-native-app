@@ -44,8 +44,8 @@ const Auth = () => {
         await signup(formData.email, formData.password, formData.name);
       }
       
-      // Get the redirect path from location state or default to home
-      const from = location.state?.from?.pathname || '/';
+      // Get the redirect path from location state or default to blog
+      const from = location.state?.from?.pathname || '/blog';
       navigate(from, { replace: true });
     } catch (error) {
       setError(error.message);
@@ -60,7 +60,7 @@ const Auth = () => {
 
     try {
       await loginWithGoogle();
-      const from = location.state?.from?.pathname || '/';
+      const from = location.state?.from?.pathname || '/blog';
       navigate(from, { replace: true });
     } catch (error) {
       setError(error.message);

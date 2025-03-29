@@ -13,6 +13,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Auth from './components/Auth';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserProfile from './components/UserProfile';
+import Blog from './components/Blog';
 
 function App() {
   const [showAddProductForm, setShowAddProductForm] = useState(false);
@@ -60,6 +61,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <UserProfile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/blog"
+                    element={
+                      <ProtectedRoute>
+                        <Blog />
                       </ProtectedRoute>
                     }
                   />
