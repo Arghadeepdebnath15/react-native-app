@@ -4,7 +4,7 @@ import { getUserProfile, updateUserProfile } from '../services/userProfileServic
 import '../styles/UserProfile.css';
 
 const UserProfile = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
