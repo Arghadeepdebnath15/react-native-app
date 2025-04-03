@@ -20,18 +20,35 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Increase timeout for slow connections
-  timeout: 10000,
+  // Reduced timeout for faster response
+  timeout: 5000,
 });
+
+// Add caching for products
+let productsCache = null;
+let lastFetchTime = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // API methods for products
 export const fetchProducts = async () => {
   try {
-    // Use the full path to ensure we're hitting the correct endpoint
+    // Check if we have a valid cache
+    if (productsCache && lastFetchTime && (Date.now() - lastFetchTime) < CACHE_DURATION) {
+      console.log('Returning cached products');
+      return productsCache;
+    }
+
     const response = await api.get('/products');
+    productsCache = response.data;
+    lastFetchTime = Date.now();
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
+    // If we have cached data, return it even if the request fails
+    if (productsCache) {
+      console.log('Returning cached products due to error');
+      return productsCache;
+    }
     throw error;
   }
 };

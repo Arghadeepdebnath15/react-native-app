@@ -9,14 +9,22 @@ export const ProductProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to fetch products
+  // Function to fetch products with optimistic loading
   const getProducts = async () => {
     try {
-      setLoading(true);
+      // Set loading to true only if we don't have any products
+      if (products.length === 0) {
+        setLoading(true);
+      }
       const data = await fetchProducts();
       setProducts(data);
+      setError(null);
     } catch (err) {
       setError(err.message || 'Failed to fetch products');
+      // Don't clear products on error if we have cached data
+      if (products.length === 0) {
+        setProducts([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -27,14 +35,27 @@ export const ProductProvider = ({ children }) => {
     getProducts();
   }, []);
 
-  // Refresh products function
+  // Refresh products function with optimistic updates
   const refreshProducts = useCallback(async () => {
-    await getProducts();
+    try {
+      const data = await fetchProducts();
+      setProducts(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Failed to refresh products');
+      // Keep existing products on refresh error
+    }
   }, []);
 
-  // Get a single product by ID using useCallback to prevent unnecessary re-renders
+  // Get a single product by ID with caching
   const getProduct = useCallback(async (id) => {
     try {
+      // Check if product exists in current state
+      const existingProduct = products.find(p => p._id === id);
+      if (existingProduct) {
+        return existingProduct;
+      }
+      
       setLoading(true);
       const data = await fetchProductById(id);
       return data;
@@ -44,7 +65,7 @@ export const ProductProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [products]);
 
   // Add a review to a product using useCallback
   const submitReview = useCallback(async (productId, reviewData) => {
