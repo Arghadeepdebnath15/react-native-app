@@ -19,15 +19,22 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
       return;
     }
 
-    // Set up message listener
+    // Set up message listener with proper filtering
     const unsubscribeMessages = getMessages(currentUser.uid, otherUserId, (newMessages, type) => {
       setMessages(prevMessages => {
+        // Filter out any messages that don't belong to this conversation
         const filteredMessages = prevMessages.filter(msg => 
-          !(type === 'sent' && msg.senderId === currentUser.uid) &&
-          !(type === 'received' && msg.senderId === otherUserId)
+          (msg.senderId === currentUser.uid && msg.receiverId === otherUserId) ||
+          (msg.senderId === otherUserId && msg.receiverId === currentUser.uid)
         );
         
-        const updatedMessages = [...filteredMessages, ...newMessages]
+        // Add new messages that belong to this conversation
+        const validNewMessages = newMessages.filter(msg => 
+          (msg.senderId === currentUser.uid && msg.receiverId === otherUserId) ||
+          (msg.senderId === otherUserId && msg.receiverId === currentUser.uid)
+        );
+        
+        const updatedMessages = [...filteredMessages, ...validNewMessages]
           .sort((a, b) => {
             const timeA = a.timestamp?.seconds || 0;
             const timeB = b.timestamp?.seconds || 0;

@@ -13,6 +13,7 @@ const ChatList = ({ onSelectUser }) => {
   const [loading, setLoading] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [showNotifications, setShowNotifications] = useState({});
+  const [showAllUsers, setShowAllUsers] = useState(true);
 
   const markMessagesAsRead = async (senderId) => {
     try {
@@ -105,27 +106,37 @@ const ChatList = ({ onSelectUser }) => {
 
         const chatSnapshot = await getDocs(chatQuery);
         const chattedUserIds = new Set();
+        const userMessages = new Map(); // Map to store messages for each user
         
         console.log('Found messages:', chatSnapshot.size);
         
         chatSnapshot.forEach((doc) => {
           const message = doc.data();
-          console.log('Message data:', {
-            senderId: message.senderId,
-            receiverId: message.receiverId,
-            currentUser: currentUser.uid
+          const otherUserId = message.senderId === currentUser.uid ? message.receiverId : message.senderId;
+          
+          // Only add messages for the specific user
+          if (!userMessages.has(otherUserId)) {
+            userMessages.set(otherUserId, []);
+          }
+          
+          // Add message to specific user's messages array
+          userMessages.get(otherUserId).push({
+            ...message,
+            id: doc.id,
+            timestamp: message.timestamp?.toDate() || new Date()
           });
           
-          // Add both sender and receiver to the set if they're not the current user
-          if (message.senderId !== currentUser.uid) {
-            chattedUserIds.add(message.senderId);
-          }
-          if (message.receiverId !== currentUser.uid) {
-            chattedUserIds.add(message.receiverId);
-          }
+          // Add user to chatted set
+          chattedUserIds.add(otherUserId);
+        });
+
+        // Sort messages by timestamp for each user
+        userMessages.forEach((messages, userId) => {
+          messages.sort((a, b) => b.timestamp - a.timestamp);
         });
 
         console.log('Users with messages:', Array.from(chattedUserIds));
+        console.log('Messages by user:', Object.fromEntries(userMessages));
 
         // Then get all users
         const usersRef = collection(db, 'users');
@@ -135,16 +146,19 @@ const ChatList = ({ onSelectUser }) => {
           const usersList = [];
           querySnapshot.forEach((doc) => {
             const userData = doc.data();
-            const userId = doc.id; // Get the document ID as the user ID
+            const userId = doc.id;
             
             if (userId !== currentUser.uid) {
               const hasChatted = chattedUserIds.has(userId);
+              const userMessagesList = userMessages.get(userId) || []; // Get messages only for this specific user
+              const lastMessage = userMessagesList[0]; // Get the most recent message
               
               console.log('Processing user:', {
                 name: userData.name,
                 uid: userId,
                 hasChatted: hasChatted,
-                inChattedSet: chattedUserIds.has(userId)
+                messageCount: userMessagesList.length,
+                lastMessage: lastMessage?.text
               });
               
               // Always add users, but mark if they've chatted
@@ -170,19 +184,30 @@ const ChatList = ({ onSelectUser }) => {
                 lastLogin: userData.lastLogin,
                 role: userData.role || 'user',
                 isGoogleUser: isGoogleUser,
-                hasChatted: hasChatted
+                hasChatted: hasChatted,
+                messages: userMessagesList, // Only messages for this specific user
+                lastMessage: lastMessage,
+                unreadCount: userMessagesList.filter(m => !m.read && m.senderId !== currentUser.uid).length
               });
             }
           });
           
           console.log('Total users:', usersList.length);
           console.log('Users with chats:', usersList.filter(u => u.hasChatted).length);
-          console.log('Users with chats details:', usersList.filter(u => u.hasChatted).map(u => ({ name: u.name, uid: u.uid })));
+          console.log('Users with chats details:', usersList.filter(u => u.hasChatted).map(u => ({ 
+            name: u.name, 
+            uid: u.uid,
+            messageCount: u.messages.length,
+            lastMessage: u.lastMessage?.text
+          })));
           
-          // Sort users to show chatted users first
+          // Sort users to show chatted users first, then by most recent message
           const sortedUsers = usersList.sort((a, b) => {
             if (a.hasChatted && !b.hasChatted) return -1;
             if (!a.hasChatted && b.hasChatted) return 1;
+            if (a.lastMessage && b.lastMessage) {
+              return b.lastMessage.timestamp - a.lastMessage.timestamp;
+            }
             return 0;
           });
           
@@ -203,8 +228,16 @@ const ChatList = ({ onSelectUser }) => {
 
   useEffect(() => {
     if (!searchTerm.trim()) {
-      // Show only users with chats when no search term
-      const filtered = users.filter(user => user.hasChatted);
+      // Filter users based on showAllUsers state
+      const filtered = showAllUsers 
+        ? [...users] 
+        : users.filter(user => {
+            console.log('Checking user:', user.name, 'hasChatted:', user.hasChatted);
+            return user.hasChatted;
+          });
+      
+      console.log('Filtered users:', filtered.length);
+      console.log('Users with chats:', filtered.filter(u => u.hasChatted).length);
       
       // Sort users to show chatted users first
       const sortedUsers = filtered.sort((a, b) => {
@@ -225,11 +258,46 @@ const ChatList = ({ onSelectUser }) => {
     });
 
     setFilteredUsers(filtered);
-  }, [searchTerm, users]);
+  }, [searchTerm, users, showAllUsers]);
 
   const handleUserSelect = async (user) => {
-    await markMessagesAsRead(user.uid);
-    onSelectUser(user);
+    try {
+      // Mark messages as read for this specific user only
+      const messagesRef = collection(db, 'messages');
+      const q = query(
+        messagesRef,
+        where('receiverId', '==', currentUser.uid),
+        where('senderId', '==', user.uid),
+        where('read', '==', false)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const updatePromises = querySnapshot.docs.map(async (doc) => {
+        await updateDoc(doc.ref, { read: true });
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Update unread counts only for this specific user
+      setUnreadCounts(prev => ({
+        ...prev,
+        [user.uid]: 0
+      }));
+      
+      setShowNotifications(prev => ({
+        ...prev,
+        [user.uid]: false
+      }));
+      
+      // Pass only this user's messages to the parent component
+      const userMessages = users.find(u => u.uid === user.uid)?.messages || [];
+      onSelectUser({
+        ...user,
+        messages: userMessages
+      });
+    } catch (error) {
+      console.error('Error handling user selection:', error);
+    }
   };
 
   if (!currentUser) {
@@ -239,7 +307,15 @@ const ChatList = ({ onSelectUser }) => {
   return (
     <div className="chat-list-container">
       <div className="chat-list-header">
-        <h2>Messages</h2>
+        <div className="header-top">
+          <h2>Messages</h2>
+          <button 
+            className="toggle-users-btn"
+            onClick={() => setShowAllUsers(!showAllUsers)}
+          >
+            {showAllUsers ? 'Show Only Chats' : 'Show All Users'}
+          </button>
+        </div>
         <div className="search-container">
           <input
             type="text"
