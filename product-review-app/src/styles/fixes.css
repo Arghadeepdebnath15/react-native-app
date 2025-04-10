@@ -51,7 +51,7 @@ html.mobile-device body {
 /* Container layout */
 .container {
   margin-top: 0;
-  padding-top: 30px;
+  padding-top: 2px;
   min-height: auto;
   height: auto;
   flex: 1 0 auto;

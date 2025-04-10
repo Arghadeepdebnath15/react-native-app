@@ -1,0 +1,208 @@
+.messages-list-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  height: calc(100vh - 64px); /* Subtract navbar height */
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.messages-list-header {
+  margin: 0;
+  padding: 15px 20px;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+}
+
+.back-button:hover {
+  background: #e2e8f0;
+  color: #334155;
+  transform: translateX(-2px);
+}
+
+.back-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.messages-list-header h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.messages-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  background: #ffffff;
+}
+
+.chat-list-section {
+  flex: 0 0 380px;
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.chat-section {
+  flex: 1;
+  background: #ffffff;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Override ChatList styles for the full page */
+.messages-list-container .chat-list-container {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  width: 100%;
+  margin: 0;
+  height: 100%;
+}
+
+.messages-list-container .user-item {
+  padding: 15px 20px;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.messages-list-container .user-item:hover {
+  background-color: #f1f5f9;
+}
+
+.messages-list-container .user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.messages-list-container .user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.messages-list-container .user-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.messages-list-container .user-email {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* Override Messaging styles for the side panel */
+.chat-section .messaging-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transform: none;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .messages-content {
+    flex-direction: column;
+  }
+
+  .chat-list-section {
+    flex: 0 0 auto;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+    height: 100%;
+  }
+
+  .chat-section {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mobile-chat-active .chat-section {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    background: white;
+  }
+
+  .mobile-chat-active .chat-section .messaging-container {
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .messages-list-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .messages-list-container .user-item {
+    padding: 12px 15px;
+  }
+
+  .messages-list-container .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+} 

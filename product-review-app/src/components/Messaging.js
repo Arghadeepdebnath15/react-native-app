@@ -9,7 +9,9 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!currentUser || !otherUserId) {
@@ -52,6 +54,9 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
     return () => {
       console.log('Cleaning up message listener');
       unsubscribe();
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [currentUser, otherUserId]);
 
@@ -61,6 +66,18 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleInputChange = (e) => {
+    setNewMessage(e.target.value);
+    if (!isTyping) {
+      setIsTyping(true);
+      // Simulate typing indicator for demo purposes
+      // In a real app, you would emit a typing event to the server
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+      }, 2000);
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -76,6 +93,11 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
 
     try {
       setError('');
+      setIsTyping(false);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
       console.log('Sending message:', {
         senderId: currentUser.uid,
         receiverId: otherUserId,
@@ -97,7 +119,10 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
   return (
     <div className="messaging-container">
       <div className="messaging-header">
-        <h3>Chat with {otherUserName}</h3>
+        <div className="header-content">
+          <h3>Chat with {otherUserName}</h3>
+          <div className="user-status">You are chatting as {currentUser.displayName || 'Guest'}</div>
+        </div>
         <button className="close-button" onClick={onClose}>×</button>
       </div>
       
@@ -105,21 +130,33 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
         {loading ? (
           <div className="loading">Loading messages...</div>
         ) : messages.length === 0 ? (
-          <div className="no-messages">No messages yet. Start the conversation!</div>
+          <div className="no-messages">
+            <p>No messages yet. Start the conversation with {otherUserName}!</p>
+          </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`message ${
-                message.senderId === currentUser.uid ? 'sent' : 'received'
-              }`}
-            >
-              <div className="message-content">{message.message}</div>
-              <div className="message-time">
-                {message.timestamp?.toDate().toLocaleTimeString()}
+          <>
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`message ${
+                  message.senderId === currentUser.uid ? 'sent' : 'received'
+                }`}
+              >
+                <div className="message-content">{message.message}</div>
+                <div className="message-time">
+                  {message.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+            {isTyping && (
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+                <div className="typing-text">{otherUserName} is typing...</div>
+              </div>
+            )}
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -130,8 +167,8 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
         <input
           type="text"
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
+          onChange={handleInputChange}
+          placeholder={`Type a message to ${otherUserName}...`}
           className="message-input"
         />
         <button 
