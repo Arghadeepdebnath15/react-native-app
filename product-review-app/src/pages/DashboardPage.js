@@ -46,7 +46,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className={`dashboard-container ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`dashboard-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="dashboard-header">
         <h1>Welcome to Your Dashboard</h1>
         <p>Discover and manage your products in one place</p>

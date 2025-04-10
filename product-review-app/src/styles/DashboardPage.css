@@ -8,17 +8,23 @@
 }
 
 .dashboard-container.dark-mode {
-  --bg-color: #1a1a1a;
-  --card-bg: #2d2d2d;
+  --bg-color: #111827;
+  --card-bg: #1f2937;
   --text-color: #ffffff;
-  --text-secondary: #b3b3b3;
-  --border-color: #404040;
-  --hover-bg: #404040;
+  --text-secondary: #9ca3af;
+  --border-color: #374151;
+  --hover-bg: #374151;
   --primary-color: #3b82f6;
   --primary-hover: #2563eb;
   --shadow-color: rgba(0, 0, 0, 0.3);
-  --header-gradient-start: #1e3a8a;
-  --header-gradient-end: #3b82f6;
+  --header-gradient-start: #111827;
+  --header-gradient-end: #1f2937;
+  --navbar-bg: #0a0f1a;
+  --input-bg: #1f2937;
+  --button-bg: #3b82f6;
+  --button-hover: #2563eb;
+  --button-text: #ffffff;
+  --icon-color: #ffffff;
 }
 
 .dashboard-container:not(.dark-mode) {
@@ -33,6 +39,12 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --header-gradient-start: #1565c0;
   --header-gradient-end: #2196f3;
+  --navbar-bg: #ffffff;
+  --input-bg: #ffffff;
+  --button-bg: #2196f3;
+  --button-hover: #1976d2;
+  --button-text: #ffffff;
+  --icon-color: #333333;
 }
 
 .dashboard-header {
@@ -117,6 +129,7 @@
 .card-icon svg {
   width: 32px;
   height: 32px;
+  fill: currentColor;
 }
 
 .dashboard-card h2 {
@@ -133,7 +146,7 @@
 
 .dashboard-button {
   background: var(--primary-color);
-  color: white;
+  color: var(--button-text);
   border: none;
   padding: 0.8rem 1.5rem;
   border-radius: 8px;
