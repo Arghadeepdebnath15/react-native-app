@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
-import ProductCard from '../components/ProductCard';
 import SuccessPopup from '../components/SuccessPopup';
 import api from '../services/api';
 import '../styles/AddProduct.css';
