@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import ChatList from './ChatList';
 import '../styles/MessageButton.css';
 
 const MessageButton = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [showChatList, setShowChatList] = useState(false);
 
   const handleMessageClick = () => {
     if (!currentUser) {

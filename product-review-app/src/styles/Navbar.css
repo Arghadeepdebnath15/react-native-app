@@ -193,18 +193,37 @@
   background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
-  margin-right: 15px;
-  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 101;
 }
 
 .add-product-btn:hover {
-  background-color: var(--primary-color-dark);
+  background-color: var(--primary-hover-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.add-product-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-product-btn:before {
+  content: '+';
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-right: 4px;
 }
 
 .search-suggestions {
@@ -340,14 +359,9 @@
   }
 
   .add-product-btn {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.8rem;
-    margin-right: 10px;
-    min-width: auto;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
   }
 
   .user-section {
@@ -434,10 +448,8 @@
   }
 
   .add-product-btn {
-    padding: 0.25rem 0.2rem;
-    font-size: 0.75rem;
-    height: 28px;
-    margin-right: 8px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
   }
 
   .user-section {
