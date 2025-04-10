@@ -263,76 +263,78 @@ html {
 
 /* ---------- End New Navbar Styles ---------- */
 
-/* Loading Spinner - Optimize for better performance */
+/* Enhanced Loading Container */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 2200px;
+  min-height: 100vh;
   text-align: center;
-  /* Prevent layout shifts */
-  contain: layout;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem;
 }
 
 .loading-spinner {
   width: 50px;
   height: 50px;
   border: 5px solid rgba(0, 123, 255, 0.2);
-  /* Use composited animations for better performance */
-  will-change: transform;
   border-radius: 50%;
   border-top-color: #007bff;
   animation: spin 1s ease-in-out infinite;
   margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.loading-text {
+  color: #007bff;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  animation: pulse 2s infinite;
 }
 
+/* Enhanced Error Container */
 .error-container {
   padding: 2rem;
   text-align: center;
   color: #dc3545;
-  background-color: #f8d7da;
-  border-radius: 8px;
-  margin: 2rem 0;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
+  border-radius: 12px;
+  margin: 2rem;
   min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  box-shadow: 0 4px 6px rgba(220, 53, 69, 0.1);
+  border: 1px solid #f5c6cb;
 }
 
-/* Products Grid with smooth stopping */
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Enhanced Products Grid */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 2rem;
   margin: 2rem 0;
-  min-height: 400px; /* Minimum height to prevent layout shifts when loading */
+  min-height: 400px;
   width: 100%;
   max-width: 100%;
-  /* Use GPU acceleration for smoother scrolling */
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform;
-  /* Reduce reflow and repaint */
   contain: layout style;
-  /* Add scroll snap container */
   scroll-snap-type: y proximity;
-  padding-bottom: 1rem;
+  padding-bottom: 2rem;
 }
 
-@media (max-width: 480px) {
-  .products-grid {
-    grid-template-columns: 1fr; /* Single column on very small screens */
-    gap: 1rem;
-  }
-}
-
-/* No Products Message */
+/* Enhanced No Products Message */
 .no-products {
   text-align: center;
   padding: 3rem 0;
@@ -342,6 +344,87 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  margin: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .products-grid {
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .loading-container {
+    min-height: 50vh;
+  }
+  
+  .error-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .loading-text {
+    font-size: 1rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .loading-container {
+    background: linear-gradient(135deg, #2c3e50 0%, #1a1a1a 100%);
+  }
+  
+  .loading-text {
+    color: #ffffff;
+  }
+  
+  .error-container {
+    background: linear-gradient(135deg, #2c1810 0%, #1a0f0a 100%);
+  }
+  
+  .no-products {
+    background: linear-gradient(135deg, #2c3e50 0%, #1a1a1a 100%);
+    color: #ffffff;
+  }
 }
 
 /* Product Card snap point */
