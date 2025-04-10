@@ -5,16 +5,16 @@ import { db } from '../firebase/config';
 import '../styles/ChatList.css';
 import md5 from 'crypto-js/md5';
 
-const ChatList = ({ _onSelectUser }) => {
+const ChatList = ({ onSelectUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const [_notifications, setShowNotifications] = useState({});
+  const [notifications, setShowNotifications] = useState({});
   const [showAllUsers, setShowAllUsers] = useState(true);
   const { currentUser } = useAuth();
 
-  const _handleSearch = () => {
+  const handleSearch = () => {
     // ... existing code ...
   };
 
@@ -115,9 +115,9 @@ const ChatList = ({ _onSelectUser }) => {
         const q = query(usersRef, orderBy('lastLogin', 'desc'));
         
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-          const usersList = [];
-          querySnapshot.forEach((doc) => {
-            const userData = doc.data();
+        const usersList = [];
+        querySnapshot.forEach((doc) => {
+          const userData = doc.data();
             const userId = doc.id;
             
             if (userId !== currentUser.uid) {
@@ -147,23 +147,23 @@ const ChatList = ({ _onSelectUser }) => {
                 ? userData.photoURL || gravatarUrl
                 : userData.profilePicture || userData.photoURL || userData.avatar || gravatarUrl;
               
-              usersList.push({
-                id: doc.id,
+            usersList.push({
+              id: doc.id,
                 uid: userId,
-                name: userData.name || userData.displayName || 'Anonymous',
-                email: userData.email || '',
+              name: userData.name || userData.displayName || 'Anonymous',
+              email: userData.email || '',
                 photoURL: profilePicture,
-                lastLogin: userData.lastLogin,
+              lastLogin: userData.lastLogin,
                 role: userData.role || 'user',
                 isGoogleUser: isGoogleUser,
                 hasChatted: hasChatted,
                 messages: userMessagesList, // Only messages for this specific user
                 lastMessage: lastMessage,
                 unreadCount: userMessagesList.filter(m => !m.read && m.senderId !== currentUser.uid).length
-              });
-            }
-          });
-          
+            });
+          }
+        });
+        
           console.log('Total users:', usersList.length);
           console.log('Users with chats:', usersList.filter(u => u.hasChatted).length);
           console.log('Users with chats details:', usersList.filter(u => u.hasChatted).map(u => ({ 
@@ -184,7 +184,7 @@ const ChatList = ({ _onSelectUser }) => {
           });
           
           setUsers(sortedUsers);
-          setLoading(false);
+        setLoading(false);
         });
 
         return () => unsubscribe();
@@ -194,7 +194,7 @@ const ChatList = ({ _onSelectUser }) => {
       }
     };
 
-    fetchUsers();
+      fetchUsers();
   }, [currentUser]);
 
   useEffect(() => {
@@ -231,14 +231,14 @@ const ChatList = ({ _onSelectUser }) => {
     setUsers(filtered);
   }, [searchTerm, users, showAllUsers]);
 
-  const handleUserSelect = async (_userId) => {
+  const handleUserSelect = async (userId) => {
     try {
       // Mark messages as read for this specific user only
       const messagesRef = collection(db, 'messages');
       const q = query(
         messagesRef,
         where('receiverId', '==', currentUser.uid),
-        where('senderId', '==', _userId),
+        where('senderId', '==', userId),
         where('read', '==', false)
       );
       
@@ -252,20 +252,20 @@ const ChatList = ({ _onSelectUser }) => {
       // Update unread counts only for this specific user
       setUnreadCounts(prev => ({
         ...prev,
-        [_userId]: 0
+        [userId]: 0
       }));
       
       setShowNotifications(prev => ({
         ...prev,
-        [_userId]: false
+        [userId]: false
       }));
       
-      // Pass only this user's messages to the parent component
-      const userMessages = users.find(u => u.uid === _userId)?.messages || [];
-      _onSelectUser({
-        ...users.find(u => u.uid === _userId),
-        messages: userMessages
-      });
+      // Find the selected user
+      const selectedUser = users.find(u => u.uid === userId);
+      if (selectedUser) {
+        // Pass the selected user to the parent component
+        onSelectUser(selectedUser);
+      }
     } catch (error) {
       console.error('Error handling user selection:', error);
     }
@@ -297,7 +297,7 @@ const ChatList = ({ _onSelectUser }) => {
           />
         </div>
       </div>
-      
+
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
@@ -331,12 +331,12 @@ const ChatList = ({ _onSelectUser }) => {
                   onClick={() => handleUserSelect(user.uid)}
                 >
                   {user.hasChatted && unreadCounts[user.uid] > 0 && (
-                    <div className="chat-notification">
-                      New messages from {user.name}!
-                    </div>
-                  )}
-                  <div className="user-avatar">
-                    {user.photoURL ? (
+                <div className="chat-notification">
+                  New messages from {user.name}!
+                </div>
+              )}
+              <div className="user-avatar">
+                {user.photoURL ? (
                       <img 
                         src={user.photoURL} 
                         alt={`${user.name}'s avatar`}
@@ -348,29 +348,29 @@ const ChatList = ({ _onSelectUser }) => {
                           e.target.src = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=200`;
                         }}
                       />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    {user.hasChatted && unreadCounts[user.uid] > 0 && (
-                      <span className="unread-badge">{unreadCounts[user.uid]}</span>
-                    )}
+                ) : (
+                  <div className="avatar-placeholder">
+                    {user.name.charAt(0).toUpperCase()}
                   </div>
-                  <div className="user-info">
-                    <div className="user-name">{user.name}</div>
-                    <div className="user-email">{user.email}</div>
-                    <div className="user-role">{user.role}</div>
+                )}
+                    {user.hasChatted && unreadCounts[user.uid] > 0 && (
+                  <span className="unread-badge">{unreadCounts[user.uid]}</span>
+                )}
+              </div>
+              <div className="user-info">
+                <div className="user-name">{user.name}</div>
+                <div className="user-email">{user.email}</div>
+                <div className="user-role">{user.role}</div>
                     {!user.hasChatted && (
                       <div className="new-user-label">New User</div>
                     )}
-                  </div>
-                  <div className="user-actions">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                    </svg>
-                  </div>
-                </div>
+              </div>
+              <div className="user-actions">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+              </div>
+            </div>
               </React.Fragment>
             );
           })}
