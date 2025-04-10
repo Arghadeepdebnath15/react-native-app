@@ -2,9 +2,11 @@ import React, { useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 import SuccessPopup from '../components/SuccessPopup';
+import MessageButton from '../components/MessageButton';
 import api from '../services/api';
 import '../styles/AddProduct.css';
 import '../styles/HomePage.css';
+import '../styles/MessageButton.css';
 const HomePage = ({ showForm, setShowForm }) => {
   const { products, loading, error, refreshProducts } = useContext(ProductContext);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -221,6 +223,12 @@ const HomePage = ({ showForm, setShowForm }) => {
         <div className="hero-content">
           <h1 className="hero-title">Discover Amazing Products</h1>
           <p className="hero-subtitle">Find the best products reviewed by our community</p>
+          <div className="hero-actions">
+            <MessageButton 
+              userId="admin" // Replace with actual admin/support user ID
+              userName="Support Team"
+            />
+          </div>
         </div>
       </section>
 

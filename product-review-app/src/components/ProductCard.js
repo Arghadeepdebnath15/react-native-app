@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getImageUrl } from '../utils/imageUtils';
+import { useAuth } from '../contexts/AuthContext';
+import Messaging from './Messaging';
 import '../styles/ProductCard.css';
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [showMessaging, setShowMessaging] = useState(false);
 
   // Generate star rating display
   const renderStars = (rating) => {
@@ -31,6 +35,14 @@ const ProductCard = ({ product }) => {
     
     // Navigate to the product page
     navigate(`/product/${product._id}`);
+  };
+
+  const handleMessageClick = () => {
+    if (!currentUser) {
+      // Redirect to login or show login modal
+      return;
+    }
+    setShowMessaging(true);
   };
 
   return (
@@ -63,8 +75,25 @@ const ProductCard = ({ product }) => {
           >
             View Details
           </button>
+          <button 
+            className="message-button"
+            onClick={handleMessageClick}
+          >
+            Message Seller
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+            </svg>
+          </button>
         </div>
       </div>
+
+      {showMessaging && (
+        <Messaging
+          otherUserId={product.userId} // Make sure product has userId field
+          otherUserName={product.userName} // Make sure product has userName field
+          onClose={() => setShowMessaging(false)}
+        />
+      )}
     </div>
   );
 };

@@ -67,7 +67,6 @@
   display: flex;
   gap: 10px;
   margin-top: 15px;
-  justify-content: center;  
 }
 
 .product-actions button {
@@ -106,4 +105,29 @@
   border-radius: 4px;
   margin-bottom: 10px;
   font-size: 0.9em;
+}
+
+.message-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.message-button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message-button svg {
+  width: 18px;
+  height: 18px;
 } 
