@@ -5,6 +5,7 @@ import ProductCard from '../components/ProductCard';
 import SuccessPopup from '../components/SuccessPopup';
 import api from '../services/api';
 import '../styles/AddProduct.css';
+import '../styles/HomePage.css';
 
 const HomePage = ({ showForm, setShowForm }) => {
   const { products, loading, error, refreshProducts } = useContext(ProductContext);
@@ -201,7 +202,7 @@ const HomePage = ({ showForm, setShowForm }) => {
 
   if (loading) {
     return (
-      <div className="container loading-container">
+      <div className="loading-container">
         <div className="loading-spinner"></div>
         <h2>Loading products...</h2>
       </div>
@@ -210,14 +211,21 @@ const HomePage = ({ showForm, setShowForm }) => {
 
   if (error) {
     return (
-      <div className="container error-container">
+      <div className="error-container">
         <h2>Error: {error}</h2>
       </div>
     );
   }
 
   return (
-    <div className="container">
+    <div className="home-container">
+      <section className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">Discover Amazing Products</h1>
+          <p className="hero-subtitle">Find the best products reviewed by our community</p>
+        </div>
+      </section>
+
       {showSuccess && (
         <SuccessPopup
           message={successMessage}
@@ -227,7 +235,6 @@ const HomePage = ({ showForm, setShowForm }) => {
       
       {showForm && (
         <div className="floating-form-overlay" onClick={(e) => {
-          // Close form when clicking overlay (outside form)
           if (e.target.className === 'floating-form-overlay') {
             setShowForm(false);
           }
@@ -397,7 +404,30 @@ const HomePage = ({ showForm, setShowForm }) => {
       ) : (
         <div className="products-grid">
           {filteredProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <div key={product._id} className="product-card">
+              <img 
+                src={product.imageUrl} 
+                alt={product.name}
+                className="product-image"
+              />
+              <div className="product-content">
+                <h3 className="product-title">{product.name}</h3>
+                <p className="product-description">{product.description}</p>
+                <div className="product-price">${product.price}</div>
+                <span className="product-category">{product.category}</span>
+                <div className="product-actions">
+                  <button 
+                    className="view-details-button"
+                    onClick={() => window.location.href = `/product/${product._id}`}
+                  >
+                    View Details
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       )}
