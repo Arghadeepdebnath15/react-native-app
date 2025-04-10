@@ -28,7 +28,6 @@ const Auth = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
     setError('');
   };
 
@@ -44,7 +43,6 @@ const Auth = () => {
         await signup(formData.email, formData.password, formData.name);
       }
       
-      // Get the redirect path from location state or default to blog
       const from = location.state?.from?.pathname || '/blog';
       navigate(from, { replace: true });
     } catch (error) {
@@ -72,54 +70,81 @@ const Auth = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
+        <div className="auth-header">
+          <h2>{isLogin ? 'Welcome Back!' : 'Create Account'}</h2>
+          <p className="auth-subtitle">
+            {isLogin ? 'Sign in to continue' : 'Join us to get started'}
+          </p>
+        </div>
+        
         {error && <div className="error-message">{error}</div>}
-        <form onSubmit={handleSubmit}>
+        
+        <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="name">Name</label>
+              <label htmlFor="name">Full Name</label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                  placeholder="Enter your full name"
+                />
+              </div>
+            </div>
+          )}
+          
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <div className="input-wrapper">
               <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
                 required
                 disabled={loading}
+                placeholder="Enter your email"
               />
             </div>
-          )}
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
           </div>
+          
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
+            <div className="input-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                placeholder="Enter your password"
+              />
+            </div>
           </div>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
+          
+          <button 
+            type="submit" 
+            className="auth-button"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="loading-spinner"></span>
+            ) : (
+              isLogin ? 'Sign In' : 'Create Account'
+            )}
           </button>
         </form>
 
         <div className="auth-divider">
-          <span>OR</span>
+          <span>or continue with</span>
         </div>
 
         <button 
@@ -143,7 +168,7 @@ const Auth = () => {
               onClick={() => setIsLogin(!isLogin)}
               disabled={loading}
             >
-              {isLogin ? 'Sign Up' : 'Login'}
+              {isLogin ? 'Sign Up' : 'Sign In'}
             </button>
           </p>
         </div>
