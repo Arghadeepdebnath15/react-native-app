@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { collection, query, getDocs, orderBy, where, onSnapshot, or, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -18,206 +18,160 @@ const ChatList = ({ onSelectUser }) => {
     setSearchTerm(e.target.value);
   };
 
-  useEffect(() => {
-    const fetchUnreadCounts = async () => {
-      try {
-        const counts = {};
-        const notifications = {};
-        const messagesRef = collection(db, 'messages');
-        const q = query(
-          messagesRef,
-          where('receiverId', '==', currentUser.uid),
-          where('read', '==', false)
-        );
-        const querySnapshot = await getDocs(q);
-        
-        // Reset counts for all users
-        users.forEach(user => {
-          counts[user.uid] = 0;
-          notifications[user.uid] = false;
-        });
-        
-        // Update counts for users with unread messages
-        querySnapshot.forEach((doc) => {
-          const message = doc.data();
-          counts[message.senderId] = (counts[message.senderId] || 0) + 1;
-          notifications[message.senderId] = true;
-        });
-        
-        setUnreadCounts(counts);
-        setShowNotifications(notifications);
-      } catch (error) {
-        console.error('Error fetching unread counts:', error);
-      }
-    };
+  const fetchUnreadCounts = useCallback(async () => {
+    if (!currentUser) return;
 
-    if (currentUser && users.length > 0) {
+    try {
+      const counts = {};
+      const notifications = {};
+      const messagesRef = collection(db, 'messages');
+      const q = query(
+        messagesRef,
+        where('receiverId', '==', currentUser.uid),
+        where('read', '==', false)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      // Update counts for users with unread messages
+      querySnapshot.forEach((doc) => {
+        const message = doc.data();
+        counts[message.senderId] = (counts[message.senderId] || 0) + 1;
+        notifications[message.senderId] = true;
+      });
+      
+      setUnreadCounts(counts);
+      setShowNotifications(notifications);
+    } catch (error) {
+      console.error('Error fetching unread counts:', error);
+    }
+  }, [currentUser]);
+
+  // Set up real-time listener for unread messages
+  useEffect(() => {
+    if (currentUser) {
       fetchUnreadCounts();
-      // Set up a real-time listener for unread messages
-      const interval = setInterval(fetchUnreadCounts, 2000); // Check every 2 seconds
+      const interval = setInterval(fetchUnreadCounts, 2000);
       return () => clearInterval(interval);
     }
-  }, [currentUser, users]);
+  }, [currentUser, fetchUnreadCounts]);
 
+  // Set up real-time listeners for users and messages
   useEffect(() => {
-    const fetchUsers = async () => {
-      if (!currentUser) return;
+    if (!currentUser) return;
 
-      try {
-        console.log('Current user ID:', currentUser.uid);
-        
-        // First, get all users you've chatted with from messages collection
-        const messagesRef = collection(db, 'messages');
-        const chatQuery = query(
-          messagesRef,
-          or(
-            where('senderId', '==', currentUser.uid),
-            where('receiverId', '==', currentUser.uid)
-          )
-        );
+    let unsubscribeUsers = null;
+    let unsubscribeMessages = null;
 
-        const chatSnapshot = await getDocs(chatQuery);
-        const chattedUserIds = new Set();
-        const userMessages = new Map(); // Map to store messages for each user
+    const messagesRef = collection(db, 'messages');
+    const chatQuery = query(
+      messagesRef,
+      or(
+        where('senderId', '==', currentUser.uid),
+        where('receiverId', '==', currentUser.uid)
+      )
+    );
+
+    // Set up real-time listener for messages
+    unsubscribeMessages = onSnapshot(chatQuery, (chatSnapshot) => {
+      const chattedUserIds = new Set();
+      const userMessages = new Map();
+      
+      chatSnapshot.forEach((doc) => {
+        const message = doc.data();
+        const otherUserId = message.senderId === currentUser.uid ? message.receiverId : message.senderId;
         
-        console.log('Found messages:', chatSnapshot.size);
+        if (!userMessages.has(otherUserId)) {
+          userMessages.set(otherUserId, []);
+        }
         
-        chatSnapshot.forEach((doc) => {
-          const message = doc.data();
-          const otherUserId = message.senderId === currentUser.uid ? message.receiverId : message.senderId;
-          
-          // Only add messages for the specific user
-          if (!userMessages.has(otherUserId)) {
-            userMessages.set(otherUserId, []);
-          }
-          
-          // Add message to specific user's messages array
-          userMessages.get(otherUserId).push({
-            ...message,
-            id: doc.id,
-            timestamp: message.timestamp?.toDate() || new Date()
-          });
-          
-          // Add user to chatted set
-          chattedUserIds.add(otherUserId);
+        userMessages.get(otherUserId).push({
+          ...message,
+          id: doc.id,
+          timestamp: message.timestamp?.toDate() || new Date()
         });
-
-        // Sort messages by timestamp for each user
-        userMessages.forEach((messages, _userId) => {
-          messages.sort((a, b) => b.timestamp - a.timestamp);
-        });
-
-        console.log('Users with messages:', Array.from(chattedUserIds));
-        console.log('Messages by user:', Object.fromEntries(userMessages));
-
-        // Then get all users
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, orderBy('lastLogin', 'desc'));
         
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        chattedUserIds.add(otherUserId);
+      });
+
+      // Sort messages by timestamp for each user
+      userMessages.forEach((messages) => {
+        messages.sort((a, b) => b.timestamp - a.timestamp);
+      });
+
+      // Get all users with real-time updates
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, orderBy('lastLogin', 'desc'));
+      
+      unsubscribeUsers = onSnapshot(q, (querySnapshot) => {
         const usersList = [];
         querySnapshot.forEach((doc) => {
           const userData = doc.data();
-            const userId = doc.id;
+          const userId = doc.id;
+          
+          if (userId !== currentUser.uid) {
+            const hasChatted = chattedUserIds.has(userId);
+            const userMessagesList = userMessages.get(userId) || [];
+            const lastMessage = userMessagesList[0];
             
-            if (userId !== currentUser.uid) {
-              const hasChatted = chattedUserIds.has(userId);
-              const userMessagesList = userMessages.get(userId) || []; // Get messages only for this specific user
-              const lastMessage = userMessagesList[0]; // Get the most recent message
-              
-              console.log('Processing user:', {
-                name: userData.name,
-                uid: userId,
-                hasChatted: hasChatted,
-                messageCount: userMessagesList.length,
-                lastMessage: lastMessage?.text
-              });
-              
-              // Always add users, but mark if they've chatted
-              const emailHash = userData.email ? 
-                md5(userData.email.toLowerCase().trim()) : 
-                '00000000000000000000000000000000';
-              const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=200`;
-              
-              const isGoogleUser = userData.providerData && 
-                Array.isArray(userData.providerData) && 
-                userData.providerData.some(provider => provider.providerId === 'google.com');
-              
-              const profilePicture = isGoogleUser
-                ? userData.photoURL || gravatarUrl
-                : userData.profilePicture || userData.photoURL || userData.avatar || gravatarUrl;
-              
+            const emailHash = userData.email ? 
+              md5(userData.email.toLowerCase().trim()) : 
+              '00000000000000000000000000000000';
+            const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=200`;
+            
+            const isGoogleUser = userData.providerData && 
+              Array.isArray(userData.providerData) && 
+              userData.providerData.some(provider => provider.providerId === 'google.com');
+            
+            const profilePicture = isGoogleUser
+              ? userData.photoURL || gravatarUrl
+              : userData.profilePicture || userData.photoURL || userData.avatar || gravatarUrl;
+            
             usersList.push({
               id: doc.id,
-                uid: userId,
+              uid: userId,
               name: userData.name || userData.displayName || 'Anonymous',
               email: userData.email || '',
-                photoURL: profilePicture,
+              photoURL: profilePicture,
               lastLogin: userData.lastLogin,
-                role: userData.role || 'user',
-                isGoogleUser: isGoogleUser,
-                hasChatted: hasChatted,
-                messages: userMessagesList, // Only messages for this specific user
-                lastMessage: lastMessage,
-                unreadCount: userMessagesList.filter(m => !m.read && m.senderId !== currentUser.uid).length
+              role: userData.role || 'user',
+              isGoogleUser: isGoogleUser,
+              hasChatted: hasChatted,
+              messages: userMessagesList,
+              lastMessage: lastMessage,
+              unreadCount: userMessagesList.filter(m => !m.read && m.senderId !== currentUser.uid).length
             });
           }
         });
         
-          console.log('Total users:', usersList.length);
-          console.log('Users with chats:', usersList.filter(u => u.hasChatted).length);
-          console.log('Users with chats details:', usersList.filter(u => u.hasChatted).map(u => ({ 
-            name: u.name, 
-            uid: u.uid,
-            messageCount: u.messages.length,
-            lastMessage: u.lastMessage?.text
-          })));
-          
-          // Sort users to show chatted users first, then by most recent message
-          const sortedUsers = usersList.sort((a, b) => {
-            if (a.hasChatted && !b.hasChatted) return -1;
-            if (!a.hasChatted && b.hasChatted) return 1;
-            if (a.lastMessage && b.lastMessage) {
-              return b.lastMessage.timestamp - a.lastMessage.timestamp;
-            }
-            return 0;
-          });
-          
-          setUsers(sortedUsers);
-        setLoading(false);
+        // Sort users to show chatted users first, then by most recent message
+        const sortedUsers = usersList.sort((a, b) => {
+          if (a.hasChatted && !b.hasChatted) return -1;
+          if (!a.hasChatted && b.hasChatted) return 1;
+          if (a.lastMessage && b.lastMessage) {
+            return b.lastMessage.timestamp - a.lastMessage.timestamp;
+          }
+          return 0;
         });
-
-        return () => unsubscribe();
-      } catch (error) {
-        console.error('Error fetching users:', error);
+        
+        setUsers(sortedUsers);
         setLoading(false);
-      }
-    };
+      });
+    });
 
-      fetchUsers();
+    return () => {
+      if (unsubscribeUsers) unsubscribeUsers();
+      if (unsubscribeMessages) unsubscribeMessages();
+    };
   }, [currentUser]);
 
+  // Filter users based on search term and showAllUsers state
   useEffect(() => {
     if (!searchTerm.trim()) {
-      // Filter users based on showAllUsers state
       const filtered = showAllUsers 
         ? [...users] 
-        : users.filter(user => {
-            console.log('Checking user:', user.name, 'hasChatted:', user.hasChatted);
-            return user.hasChatted;
-          });
+        : users.filter(user => user.hasChatted);
       
-      console.log('Filtered users:', filtered.length);
-      console.log('Users with chats:', filtered.filter(u => u.hasChatted).length);
-      
-      // Sort users to show chatted users first
-      const sortedUsers = filtered.sort((a, b) => {
-        if (a.hasChatted && !b.hasChatted) return -1;
-        if (!a.hasChatted && b.hasChatted) return 1;
-        return 0;
-      });
-      
-      setUsers(sortedUsers);
+      setUsers(filtered);
       return;
     }
 
@@ -229,7 +183,7 @@ const ChatList = ({ onSelectUser }) => {
     });
 
     setUsers(filtered);
-  }, [searchTerm, users, showAllUsers]);
+  }, [searchTerm, showAllUsers]);
 
   const handleUserSelect = async (userId) => {
     try {
