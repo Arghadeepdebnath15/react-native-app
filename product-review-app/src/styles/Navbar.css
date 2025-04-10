@@ -181,19 +181,26 @@
 }
 
 .logout-button {
-  background: var(--button-bg);
-  color: var(--button-text);
+  background-color: var(--accent-color);
+  color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
   white-space: nowrap;
+  flex-shrink: 0;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  min-width: 100px;
 }
 
 .logout-button:hover {
-  background: var(--button-hover);
+  background-color: var(--accent-color-dark);
 }
 
 /* Search Suggestions */
@@ -569,7 +576,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.5rem 2rem;
   background-color: var(--navbar-bg);
   color: var(--text-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -585,26 +592,108 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex: 1;
 }
 
 .navbar-right {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.logo {
+  height: 40px;
+  object-fit: contain;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  margin: 0;
+}
+
+.nav-links a {
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--accent-color);
 }
 
 .profile-picture {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
   border: 2px solid var(--accent-color);
   transition: transform 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .profile-picture:hover {
   transform: scale(1.1);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  border: 2px solid var(--navbar-bg);
+  z-index: 1001;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  line-height: 1;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.logout-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  min-width: 100px;
+}
+
+.logout-button:hover {
+  background-color: var(--accent-color-dark);
 }
 
 /* Mobile Responsive Styles */
@@ -629,6 +718,23 @@
     min-height: 35px;
   }
 
+  .notification-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    min-height: 18px;
+  }
+
+  .logout-button {
+    padding: 0.4rem 1.2rem;
+    font-size: 0.9rem;
+    height: 35px;
+    min-width: 80px;
+  }
+
   .logo {
     height: 30px;
   }
@@ -646,6 +752,7 @@
 @media (max-width: 480px) {
   .navbar {
     padding: 0.5rem;
+    height: 45px;
   }
 
   .profile-picture {
@@ -653,6 +760,23 @@
     height: 32px;
     min-width: 32px;
     min-height: 32px;
+  }
+
+  .notification-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: -3px;
+    right: -3px;
+    min-width: 16px;
+    min-height: 16px;
+  }
+
+  .logout-button {
+    padding: 0.3rem 1rem;
+    font-size: 0.8rem;
+    height: 32px;
+    min-width: 70px;
   }
 
   .logo {

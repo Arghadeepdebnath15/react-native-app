@@ -8,6 +8,7 @@ import md5 from 'crypto-js/md5';
 const ChatList = ({ onSelectUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [notifications, setShowNotifications] = useState({});
@@ -165,26 +166,22 @@ const ChatList = ({ onSelectUser }) => {
     };
   }, [currentUser]);
 
-  // Filter users based on search term and showAllUsers state
+  // Update the search effect to properly filter users
   useEffect(() => {
-    const filterUsers = () => {
-      if (!searchTerm.trim()) {
-        return showAllUsers 
-          ? [...usersRef.current] 
-          : usersRef.current.filter(user => user.hasChatted);
-      }
+    if (!searchTerm.trim()) {
+      setFilteredUsers(users);
+      return;
+    }
 
-      const searchLower = searchTerm.toLowerCase().trim();
-      return usersRef.current.filter(user => {
-        const nameMatch = user.name?.toLowerCase().includes(searchLower);
-        const emailMatch = user.email?.toLowerCase().includes(searchLower);
-        return nameMatch || emailMatch;
-      });
-    };
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = users.filter(user => {
+      const nameMatch = user.name?.toLowerCase().includes(searchLower);
+      const emailMatch = user.email?.toLowerCase().includes(searchLower);
+      return nameMatch || emailMatch;
+    });
 
-    const filteredUsers = filterUsers();
-    setUsers(filteredUsers);
-  }, [searchTerm, showAllUsers]);
+    setFilteredUsers(filtered);
+  }, [searchTerm, users]);
 
   const handleUserSelect = async (userId) => {
     try {
@@ -254,7 +251,7 @@ const ChatList = ({ onSelectUser }) => {
           <div className="loading-spinner"></div>
           <p>Loading conversations...</p>
         </div>
-      ) : users.length === 0 ? (
+      ) : filteredUsers.length === 0 ? (
         <div className="no-conversations">
           {searchTerm ? (
             <p>No users found matching your search.</p>
@@ -264,7 +261,7 @@ const ChatList = ({ onSelectUser }) => {
         </div>
       ) : (
         <div className="user-list">
-          {users.map((user, index) => {
+          {filteredUsers.map((user, index) => {
             // Check if this is the first non-chatted user after chatted users
             const isFirstNonChatted = index > 0 && 
               !user.hasChatted && 
