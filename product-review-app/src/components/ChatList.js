@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, getDocs, orderBy, where, updateDoc, onSnapshot, or } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, where, onSnapshot, or } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import '../styles/ChatList.css';
 import md5 from 'crypto-js/md5';
 
-const ChatList = ({ onSelectUser }) => {
+const ChatList = ({ _onSelectUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
