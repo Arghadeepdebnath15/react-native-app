@@ -7,9 +7,10 @@ import { getImageUrl } from '../utils/imageUtils';
 import SuccessPopup from '../components/SuccessPopup';
 import '../styles/ProductDetailsEnhanced.css';
 
-const ProductDetailsEnhanced = ({ product, _showForm, _setShowForm }) => {
+const ProductDetailsEnhanced = ({ product: initialProduct, _showForm, _setShowForm }) => {
   const { id } = useParams();
   const { getProduct, submitReview, loading: contextLoading, error } = useContext(ProductContext);
+  const [product, setProduct] = useState(initialProduct);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -21,7 +22,7 @@ const ProductDetailsEnhanced = ({ product, _showForm, _setShowForm }) => {
     const fetchProduct = async () => {
       try {
         const data = await getProduct(id);
-        product = data;
+        setProduct(data);
       } catch (err) {
         console.error('Error fetching product:', err);
       }
@@ -42,7 +43,7 @@ const ProductDetailsEnhanced = ({ product, _showForm, _setShowForm }) => {
         throw new Error('Received invalid product data from server');
       }
       
-      product = updatedProduct;
+      setProduct(updatedProduct);
       setShowReviewForm(false);
       setSuccessMessage('Review submitted successfully! 🎉');
       setShowSuccess(true);

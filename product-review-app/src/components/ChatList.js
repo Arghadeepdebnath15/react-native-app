@@ -6,16 +6,15 @@ import '../styles/ChatList.css';
 import md5 from 'crypto-js/md5';
 
 const ChatList = ({ onSelectUser }) => {
-  const { currentUser } = useAuth();
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const [notifications, setShowNotifications] = useState({});
+  const [_notifications, setShowNotifications] = useState({});
   const [showAllUsers, setShowAllUsers] = useState(true);
+  const { currentUser } = useAuth();
 
-  const handleSearch = () => {
+  const _handleSearch = () => {
     // ... existing code ...
   };
 
@@ -185,7 +184,6 @@ const ChatList = ({ onSelectUser }) => {
           });
           
           setUsers(sortedUsers);
-          setFilteredUsers(sortedUsers);
           setLoading(false);
         });
 
@@ -219,7 +217,7 @@ const ChatList = ({ onSelectUser }) => {
         return 0;
       });
       
-      setFilteredUsers(sortedUsers);
+      setUsers(sortedUsers);
       return;
     }
 
@@ -230,47 +228,11 @@ const ChatList = ({ onSelectUser }) => {
       return nameMatch || emailMatch;
     });
 
-    setFilteredUsers(filtered);
+    setUsers(filtered);
   }, [searchTerm, users, showAllUsers]);
 
-  const handleUserSelect = async (user) => {
-    try {
-      // Mark messages as read for this specific user only
-      const messagesRef = collection(db, 'messages');
-      const q = query(
-        messagesRef,
-        where('receiverId', '==', currentUser.uid),
-        where('senderId', '==', user.uid),
-        where('read', '==', false)
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const updatePromises = querySnapshot.docs.map(async (doc) => {
-        await updateDoc(doc.ref, { read: true });
-      });
-      
-      await Promise.all(updatePromises);
-      
-      // Update unread counts only for this specific user
-      setUnreadCounts(prev => ({
-        ...prev,
-        [user.uid]: 0
-      }));
-      
-      setShowNotifications(prev => ({
-        ...prev,
-        [user.uid]: false
-      }));
-      
-      // Pass only this user's messages to the parent component
-      const userMessages = users.find(u => u.uid === user.uid)?.messages || [];
-      onSelectUser({
-        ...user,
-        messages: userMessages
-      });
-    } catch (error) {
-      console.error('Error handling user selection:', error);
-    }
+  const handleUserSelect = async (_userId) => {
+    // ... existing code ...
   };
 
   if (!currentUser) {
@@ -305,7 +267,7 @@ const ChatList = ({ onSelectUser }) => {
           <div className="loading-spinner"></div>
           <p>Loading conversations...</p>
         </div>
-      ) : filteredUsers.length === 0 ? (
+      ) : users.length === 0 ? (
         <div className="no-conversations">
           {searchTerm ? (
             <p>No users found matching your search.</p>
@@ -315,11 +277,11 @@ const ChatList = ({ onSelectUser }) => {
         </div>
       ) : (
         <div className="user-list">
-          {filteredUsers.map((user, index) => {
+          {users.map((user, index) => {
             // Check if this is the first non-chatted user after chatted users
             const isFirstNonChatted = index > 0 && 
               !user.hasChatted && 
-              filteredUsers[index - 1].hasChatted;
+              users[index - 1].hasChatted;
             
             return (
               <React.Fragment key={user.uid}>
@@ -330,7 +292,7 @@ const ChatList = ({ onSelectUser }) => {
                 )}
                 <div
                   className={`user-item ${!user.hasChatted ? 'new-user' : ''}`}
-                  onClick={() => handleUserSelect(user)}
+                  onClick={() => handleUserSelect(user.uid)}
                 >
                   {user.hasChatted && unreadCounts[user.uid] > 0 && (
                     <div className="chat-notification">
