@@ -14,7 +14,6 @@ const ChatList = ({ onSelectUser }) => {
   const [notifications, setShowNotifications] = useState({});
   const [showAllUsers, setShowAllUsers] = useState(true);
   const { currentUser } = useAuth();
-  const usersRef = useRef([]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -154,8 +153,8 @@ const ChatList = ({ onSelectUser }) => {
           return 0;
         });
         
-        usersRef.current = sortedUsers;
         setUsers(sortedUsers);
+        setFilteredUsers(showAllUsers ? sortedUsers : sortedUsers.filter(user => user.hasChatted));
         setLoading(false);
       });
     });
@@ -164,29 +163,23 @@ const ChatList = ({ onSelectUser }) => {
       if (unsubscribeUsers) unsubscribeUsers();
       if (unsubscribeMessages) unsubscribeMessages();
     };
-  }, [currentUser]);
+  }, [currentUser, showAllUsers]);
 
-  // Update the search effect to use usersRef
+  // Update filtered users when search term changes
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredUsers(usersRef.current);
-      return;
-    }
-
-    const searchLower = searchTerm.toLowerCase();
-    const filtered = usersRef.current.filter(user => {
+    const filtered = users.filter(user => {
+      if (!showAllUsers && !user.hasChatted) return false;
+      
+      if (!searchTerm.trim()) return true;
+      
+      const searchLower = searchTerm.toLowerCase();
       const nameMatch = user.name?.toLowerCase().includes(searchLower);
       const emailMatch = user.email?.toLowerCase().includes(searchLower);
       return nameMatch || emailMatch;
     });
 
     setFilteredUsers(filtered);
-  }, [searchTerm]);
-
-  // Update usersRef when users state changes
-  useEffect(() => {
-    usersRef.current = users;
-  }, [users]);
+  }, [searchTerm, users, showAllUsers]);
 
   const handleUserSelect = async (userId) => {
     try {
@@ -267,10 +260,9 @@ const ChatList = ({ onSelectUser }) => {
       ) : (
         <div className="user-list">
           {filteredUsers.map((user, index) => {
-            // Check if this is the first non-chatted user after chatted users
             const isFirstNonChatted = index > 0 && 
               !user.hasChatted && 
-              users[index - 1].hasChatted;
+              filteredUsers[index - 1].hasChatted;
             
             return (
               <React.Fragment key={user.uid}>
