@@ -166,22 +166,27 @@ const ChatList = ({ onSelectUser }) => {
     };
   }, [currentUser]);
 
-  // Update the search effect to properly filter users
+  // Update the search effect to use usersRef
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredUsers(users);
+      setFilteredUsers(usersRef.current);
       return;
     }
 
     const searchLower = searchTerm.toLowerCase();
-    const filtered = users.filter(user => {
+    const filtered = usersRef.current.filter(user => {
       const nameMatch = user.name?.toLowerCase().includes(searchLower);
       const emailMatch = user.email?.toLowerCase().includes(searchLower);
       return nameMatch || emailMatch;
     });
 
     setFilteredUsers(filtered);
-  }, [searchTerm, users]);
+  }, [searchTerm]);
+
+  // Update usersRef when users state changes
+  useEffect(() => {
+    usersRef.current = users;
+  }, [users]);
 
   const handleUserSelect = async (userId) => {
     try {
