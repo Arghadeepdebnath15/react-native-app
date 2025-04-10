@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { collection, query, getDocs, orderBy, where, onSnapshot, or, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -13,6 +13,7 @@ const ChatList = ({ onSelectUser }) => {
   const [notifications, setShowNotifications] = useState({});
   const [showAllUsers, setShowAllUsers] = useState(true);
   const { currentUser } = useAuth();
+  const usersRef = useRef([]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -32,7 +33,6 @@ const ChatList = ({ onSelectUser }) => {
       );
       const querySnapshot = await getDocs(q);
       
-      // Update counts for users with unread messages
       querySnapshot.forEach((doc) => {
         const message = doc.data();
         counts[message.senderId] = (counts[message.senderId] || 0) + 1;
@@ -153,6 +153,7 @@ const ChatList = ({ onSelectUser }) => {
           return 0;
         });
         
+        usersRef.current = sortedUsers;
         setUsers(sortedUsers);
         setLoading(false);
       });
@@ -168,15 +169,13 @@ const ChatList = ({ onSelectUser }) => {
   useEffect(() => {
     const filterUsers = () => {
       if (!searchTerm.trim()) {
-        const filtered = showAllUsers 
-          ? [...users] 
-          : users.filter(user => user.hasChatted);
-        
-        return filtered;
+        return showAllUsers 
+          ? [...usersRef.current] 
+          : usersRef.current.filter(user => user.hasChatted);
       }
 
       const searchLower = searchTerm.toLowerCase().trim();
-      return users.filter(user => {
+      return usersRef.current.filter(user => {
         const nameMatch = user.name?.toLowerCase().includes(searchLower);
         const emailMatch = user.email?.toLowerCase().includes(searchLower);
         return nameMatch || emailMatch;
@@ -185,11 +184,10 @@ const ChatList = ({ onSelectUser }) => {
 
     const filteredUsers = filterUsers();
     setUsers(filteredUsers);
-  }, [searchTerm, showAllUsers, users]);
+  }, [searchTerm, showAllUsers]);
 
   const handleUserSelect = async (userId) => {
     try {
-      // Mark messages as read for this specific user only
       const messagesRef = collection(db, 'messages');
       const q = query(
         messagesRef,
@@ -205,7 +203,6 @@ const ChatList = ({ onSelectUser }) => {
       
       await Promise.all(updatePromises);
       
-      // Update unread counts only for this specific user
       setUnreadCounts(prev => ({
         ...prev,
         [userId]: 0
@@ -216,10 +213,8 @@ const ChatList = ({ onSelectUser }) => {
         [userId]: false
       }));
       
-      // Find the selected user
       const selectedUser = users.find(u => u.uid === userId);
       if (selectedUser) {
-        // Pass the selected user to the parent component
         onSelectUser(selectedUser);
       }
     } catch (error) {
