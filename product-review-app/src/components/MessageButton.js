@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import '../styles/MessageButton.css';
 
 const MessageButton = () => {
