@@ -1,3 +1,6 @@
+/* Import theme variables */
+@import './styles/theme.css';
+
 /* Global Styles */
 * {
   box-sizing: border-box;
@@ -13,6 +16,9 @@
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+  text-align: center;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 /* Prevent horizontal scrolling at application root */
@@ -70,7 +76,7 @@ html {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0 1rem;
   min-height: auto; /* Allow container to shrink to content size */
   margin-top: 0; /* Remove top margin */
   padding-top: 60px; /* Add top padding instead */
@@ -1369,7 +1375,7 @@ a:hover {
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 0px;
   background: #f8f9fa;
 }
 
@@ -1378,4 +1384,29 @@ a:hover {
   margin: 0;
   height: calc(100vh - 64px);
   overflow: hidden;
+}
+
+/* Dark mode specific styles */
+[data-theme="dark"] .App {
+  background-color: var(--bg-color);
+}
+
+[data-theme="dark"] .App-header {
+  background-color: var(--bg-color);
+}
+
+/* Common components */
+.section {
+  padding: 2rem 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+  
+  .section {
+    padding: 1rem 0;
+  }
 }

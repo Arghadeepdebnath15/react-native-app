@@ -7,9 +7,12 @@ import {
   addDoc, 
   serverTimestamp,
   getDocs,
-  updateDoc
+  updateDoc,
+  doc,
+  setDoc
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { auth } from '../firebase/config';
 
 // Create a new message
 export const sendMessage = async (senderId, receiverId, message) => {
@@ -141,4 +144,49 @@ export const getUnreadMessageCount = async (userId) => {
     console.error('Error getting unread message count:', error);
     throw error;
   }
+};
+
+// Typing status functions
+export const startTyping = async (userId, otherUserId) => {
+  try {
+    const typingRef = doc(db, 'typing', `${userId}_${otherUserId}`);
+    await setDoc(typingRef, {
+      userId,
+      otherUserId,
+      isTyping: true,
+      timestamp: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error setting typing status:', error);
+  }
+};
+
+export const stopTyping = async (userId, otherUserId) => {
+  try {
+    const typingRef = doc(db, 'typing', `${userId}_${otherUserId}`);
+    await setDoc(typingRef, {
+      userId,
+      otherUserId,
+      isTyping: false,
+      timestamp: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error clearing typing status:', error);
+  }
+};
+
+export const onTypingStatusChange = (otherUserId, callback) => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return () => {};
+
+  const typingQuery = query(
+    collection(db, 'typing'),
+    where('otherUserId', '==', currentUser.uid),
+    where('userId', '==', otherUserId)
+  );
+
+  return onSnapshot(typingQuery, (snapshot) => {
+    const typingStatus = snapshot.docs[0]?.data();
+    callback(typingStatus?.isTyping || false);
+  });
 }; 

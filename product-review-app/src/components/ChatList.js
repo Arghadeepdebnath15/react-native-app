@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, where, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import '../styles/ChatList.css';
 
@@ -10,6 +10,80 @@ const ChatList = ({ onSelectUser }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const [showNotifications, setShowNotifications] = useState({});
+
+  const markMessagesAsRead = async (senderId) => {
+    try {
+      const messagesRef = collection(db, 'messages');
+      const q = query(
+        messagesRef,
+        where('receiverId', '==', currentUser.uid),
+        where('senderId', '==', senderId),
+        where('read', '==', false)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const updatePromises = querySnapshot.docs.map(async (doc) => {
+        await updateDoc(doc.ref, { read: true });
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Update unread counts and notifications
+      setUnreadCounts(prev => ({
+        ...prev,
+        [senderId]: 0
+      }));
+      setShowNotifications(prev => ({
+        ...prev,
+        [senderId]: false
+      }));
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUnreadCounts = async () => {
+      try {
+        const counts = {};
+        const notifications = {};
+        const messagesRef = collection(db, 'messages');
+        const q = query(
+          messagesRef,
+          where('receiverId', '==', currentUser.uid),
+          where('read', '==', false)
+        );
+        const querySnapshot = await getDocs(q);
+        
+        // Reset counts for all users
+        users.forEach(user => {
+          counts[user.uid] = 0;
+          notifications[user.uid] = false;
+        });
+        
+        // Update counts for users with unread messages
+        querySnapshot.forEach((doc) => {
+          const message = doc.data();
+          counts[message.senderId] = (counts[message.senderId] || 0) + 1;
+          notifications[message.senderId] = true;
+        });
+        
+        setUnreadCounts(counts);
+        setShowNotifications(notifications);
+      } catch (error) {
+        console.error('Error fetching unread counts:', error);
+      }
+    };
+
+    if (currentUser && users.length > 0) {
+      fetchUnreadCounts();
+      // Set up a real-time listener for unread messages
+      const interval = setInterval(fetchUnreadCounts, 2000); // Check every 2 seconds
+      return () => clearInterval(interval);
+    }
+  }, [currentUser, users]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -64,6 +138,11 @@ const ChatList = ({ onSelectUser }) => {
     setFilteredUsers(filtered);
   }, [searchTerm, users]);
 
+  const handleUserSelect = async (user) => {
+    await markMessagesAsRead(user.uid);
+    onSelectUser(user);
+  };
+
   if (!currentUser) {
     return <div className="chat-list-container">Please log in to view chat list</div>;
   }
@@ -108,8 +187,13 @@ const ChatList = ({ onSelectUser }) => {
             <div
               key={user.id}
               className="user-item"
-              onClick={() => onSelectUser(user)}
+              onClick={() => handleUserSelect(user)}
             >
+              {showNotifications[user.uid] && (
+                <div className="chat-notification">
+                  New messages from {user.name}!
+                </div>
+              )}
               <div className="user-avatar">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt={user.name} />
@@ -117,6 +201,9 @@ const ChatList = ({ onSelectUser }) => {
                   <div className="avatar-placeholder">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
+                )}
+                {unreadCounts[user.uid] > 0 && (
+                  <span className="unread-badge">{unreadCounts[user.uid]}</span>
                 )}
               </div>
               <div className="user-info">

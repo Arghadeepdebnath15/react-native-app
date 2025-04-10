@@ -16,21 +16,25 @@ import UserProfile from './components/UserProfile';
 import Blog from './components/Blog';
 import MessagesListPage from './pages/MessagesListPage';
 import ChatPage from './pages/ChatPage';
+import DashboardPage from './pages/DashboardPage';
 
 const AppContent = () => {
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const location = useLocation();
   const isMessagesPage = location.pathname === '/messages' || location.pathname.startsWith('/chat/');
 
+  console.log('AppContent - showAddProductForm:', showAddProductForm);
+
   return (
     <div className="app">
-      <Navbar onAddProduct={() => setShowAddProductForm(true)} />
-      {showAddProductForm && (
-        <AddProduct onClose={() => setShowAddProductForm(false)} />
-      )}
+      <Navbar onAddProductClick={() => {
+        console.log('Setting showAddProductForm to true');
+        setShowAddProductForm(true);
+      }} />
       <main className={`main-content ${isMessagesPage ? 'messages-page' : ''}`}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/products" element={<HomePage showForm={showAddProductForm} setShowForm={setShowAddProductForm} />} />
           <Route path="/product/:id" element={<ProductDetailsEnhanced />} />
           <Route path="/auth" element={<Auth />} />
           <Route

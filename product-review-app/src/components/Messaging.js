@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { sendMessage, getMessages, markMessagesAsRead } from '../services/messagingService';
+import { sendMessage, getMessages, markMessagesAsRead, startTyping, stopTyping, onTypingStatusChange } from '../services/messagingService';
 import '../styles/Messaging.css';
 
 const Messaging = ({ otherUserId, otherUserName, onClose }) => {
@@ -9,7 +9,7 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
@@ -19,22 +19,14 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
       return;
     }
 
-    console.log('Setting up message listener for:', {
-      currentUserId: currentUser.uid,
-      otherUserId: otherUserId
-    });
-
-    const unsubscribe = getMessages(currentUser.uid, otherUserId, (newMessages, type) => {
-      console.log('Received new messages:', { type, messages: newMessages });
-      
+    // Set up message listener
+    const unsubscribeMessages = getMessages(currentUser.uid, otherUserId, (newMessages, type) => {
       setMessages(prevMessages => {
-        // Filter out existing messages of the same type
         const filteredMessages = prevMessages.filter(msg => 
           !(type === 'sent' && msg.senderId === currentUser.uid) &&
           !(type === 'received' && msg.senderId === otherUserId)
         );
         
-        // Add new messages and sort by timestamp
         const updatedMessages = [...filteredMessages, ...newMessages]
           .sort((a, b) => {
             const timeA = a.timestamp?.seconds || 0;
@@ -42,18 +34,22 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
             return timeA - timeB;
           });
         
-        console.log('Updated messages:', updatedMessages);
         return updatedMessages;
       });
       setLoading(false);
+    });
+
+    // Set up typing status listener
+    const unsubscribeTyping = onTypingStatusChange(otherUserId, (isTyping) => {
+      setIsOtherUserTyping(isTyping);
     });
 
     // Mark messages as read
     markMessagesAsRead(currentUser.uid, otherUserId);
 
     return () => {
-      console.log('Cleaning up message listener');
-      unsubscribe();
+      unsubscribeMessages();
+      unsubscribeTyping();
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
@@ -69,40 +65,38 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
   };
 
   const handleInputChange = (e) => {
-    setNewMessage(e.target.value);
-    if (!isTyping) {
-      setIsTyping(true);
-      // Simulate typing indicator for demo purposes
-      // In a real app, you would emit a typing event to the server
-      typingTimeoutRef.current = setTimeout(() => {
-        setIsTyping(false);
-      }, 2000);
+    const value = e.target.value;
+    setNewMessage(value);
+
+    // Clear any existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
+
+    // If there's text, emit typing event
+    if (value.trim()) {
+      startTyping(currentUser.uid, otherUserId);
+    } else {
+      stopTyping(currentUser.uid, otherUserId);
+    }
+
+    // Set timeout to stop typing after 2 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      stopTyping(currentUser.uid, otherUserId);
+    }, 2000);
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !currentUser || !otherUserId) {
-      console.log('Cannot send message:', { 
-        hasMessage: !!newMessage.trim(), 
-        hasCurrentUser: !!currentUser, 
-        hasOtherUserId: !!otherUserId 
-      });
-      return;
-    }
+    if (!newMessage.trim() || !currentUser || !otherUserId) return;
 
     try {
       setError('');
-      setIsTyping(false);
+      stopTyping(currentUser.uid, otherUserId);
+      
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
-      
-      console.log('Sending message:', {
-        senderId: currentUser.uid,
-        receiverId: otherUserId,
-        message: newMessage.trim()
-      });
       
       await sendMessage(currentUser.uid, otherUserId, newMessage.trim());
       setNewMessage('');
@@ -121,7 +115,17 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
       <div className="messaging-header">
         <div className="header-content">
           <h3>Chat with {otherUserName}</h3>
-          <div className="user-status">You are chatting as {currentUser.displayName || 'Guest'}</div>
+          <div className="user-status">
+            You are chatting as {currentUser.displayName || 'Guest'}
+            {isOtherUserTyping && (
+              <div className="typing-indicator-header">
+                <span></span>
+                <span></span>
+                <span></span>
+                <div className="typing-text">{otherUserName} is typing...</div>
+              </div>
+            )}
+          </div>
         </div>
         <button className="close-button" onClick={onClose}>×</button>
       </div>
@@ -148,14 +152,6 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
                 </div>
               </div>
             ))}
-            {isTyping && (
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-                <div className="typing-text">{otherUserName} is typing...</div>
-              </div>
-            )}
           </>
         )}
         <div ref={messagesEndRef} />

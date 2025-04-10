@@ -1,27 +1,133 @@
+.message-button-container {
+  position: relative;
+  width: 100%;
+}
+
+.new-message-notification {
+  position: absolute;
+  top: -35px;
+  right: 0;
+  background: var(--primary-color);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  animation: slideIn 0.3s ease-out;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .message-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background-color: #4F46E5;
+  background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 4px;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 14px;
   transition: all 0.3s ease;
-  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px var(--shadow-color);
+  width: 100%;
+  margin-top: 1rem;
+  position: relative;
 }
 
 .message-button:hover {
-  background-color: #4338CA;
+  background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px var(--shadow-color);
 }
 
 .message-button svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.message-button .badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 2px solid var(--bg-color);
+}
+
+/* Dark mode specific styles */
+.dark-mode .message-button {
+  background: var(--primary-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .message-button:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .new-message-notification {
+  background: var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .message-button {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .message-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .new-message-notification {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .message-button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .new-message-notification {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
 }
 
 .chat-list-modal {
