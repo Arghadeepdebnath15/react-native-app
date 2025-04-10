@@ -4,7 +4,7 @@
   background-color: var(--bg-color);
   color: var(--text-color);
   transition: all 0.3s ease;
-  padding-top: 6rem;
+  padding-top: 8rem;
 }
 
 .dashboard-container.dark-mode {
@@ -37,8 +37,8 @@
 
 .dashboard-header {
   text-align: center;
-  margin: 2rem auto 3rem;
-  padding: 3rem 2rem;
+  margin: 1rem auto 2rem;
+  padding: 2rem;
   background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
   border-radius: 20px;
   color: white;
@@ -60,8 +60,8 @@
 }
 
 .dashboard-header h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
   font-weight: 800;
   position: relative;
   z-index: 2;
@@ -69,13 +69,13 @@
 }
 
 .dashboard-header p {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   opacity: 0.9;
   position: relative;
   z-index: 2;
   max-width: 600px;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .dashboard-grid {
@@ -159,11 +159,12 @@
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 1rem;
+    padding-top: 6rem;
   }
 
   .dashboard-header {
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
 
   .dashboard-header h1 {
@@ -176,17 +177,40 @@
 
   .dashboard-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
   }
 
   .dashboard-card {
     padding: 1.5rem;
+    margin-bottom: 1rem;
   }
 }
 
 @media (max-width: 480px) {
+  .dashboard-container {
+    padding-top: 5rem;
+  }
+
+  .dashboard-header {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
   .dashboard-header h1 {
     font-size: 1.8rem;
+  }
+
+  .dashboard-header p {
+    font-size: 0.9rem;
+  }
+
+  .dashboard-grid {
+    gap: 1.5rem;
+  }
+
+  .dashboard-card {
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
   }
 
   .card-icon {

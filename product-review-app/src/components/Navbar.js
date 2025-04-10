@@ -85,7 +85,7 @@ const Navbar = ({ onAddProductClick }) => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isDashboardPage ? 'dashboard-nav' : ''}`}>
       <div className="nav-container">
         <div className="nav-left">
           <button className="home-btn" onClick={() => navigate('/')} aria-label="Go to home">
