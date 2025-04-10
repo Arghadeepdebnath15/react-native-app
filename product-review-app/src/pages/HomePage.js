@@ -5,7 +5,6 @@ import SuccessPopup from '../components/SuccessPopup';
 import api from '../services/api';
 import '../styles/AddProduct.css';
 import '../styles/HomePage.css';
-
 const HomePage = ({ showForm, setShowForm }) => {
   const { products, loading, error, refreshProducts } = useContext(ProductContext);
   const [filteredProducts, setFilteredProducts] = useState([]);
