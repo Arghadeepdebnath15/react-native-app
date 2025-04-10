@@ -8,12 +8,23 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (!currentUser || !otherUserId) return;
+    if (!currentUser || !otherUserId) {
+      console.log('Missing required data:', { currentUser, otherUserId });
+      return;
+    }
+
+    console.log('Setting up message listener for:', {
+      currentUserId: currentUser.uid,
+      otherUserId: otherUserId
+    });
 
     const unsubscribe = getMessages(currentUser.uid, otherUserId, (newMessages, type) => {
+      console.log('Received new messages:', { type, messages: newMessages });
+      
       setMessages(prevMessages => {
         // Filter out existing messages of the same type
         const filteredMessages = prevMessages.filter(msg => 
@@ -22,8 +33,15 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
         );
         
         // Add new messages and sort by timestamp
-        return [...filteredMessages, ...newMessages]
-          .sort((a, b) => a.timestamp?.seconds - b.timestamp?.seconds);
+        const updatedMessages = [...filteredMessages, ...newMessages]
+          .sort((a, b) => {
+            const timeA = a.timestamp?.seconds || 0;
+            const timeB = b.timestamp?.seconds || 0;
+            return timeA - timeB;
+          });
+        
+        console.log('Updated messages:', updatedMessages);
+        return updatedMessages;
       });
       setLoading(false);
     });
@@ -32,6 +50,7 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
     markMessagesAsRead(currentUser.uid, otherUserId);
 
     return () => {
+      console.log('Cleaning up message listener');
       unsubscribe();
     };
   }, [currentUser, otherUserId]);
@@ -46,13 +65,28 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !currentUser || !otherUserId) return;
+    if (!newMessage.trim() || !currentUser || !otherUserId) {
+      console.log('Cannot send message:', { 
+        hasMessage: !!newMessage.trim(), 
+        hasCurrentUser: !!currentUser, 
+        hasOtherUserId: !!otherUserId 
+      });
+      return;
+    }
 
     try {
+      setError('');
+      console.log('Sending message:', {
+        senderId: currentUser.uid,
+        receiverId: otherUserId,
+        message: newMessage.trim()
+      });
+      
       await sendMessage(currentUser.uid, otherUserId, newMessage.trim());
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
+      setError('Failed to send message. Please try again.');
     }
   };
 
@@ -90,6 +124,8 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
         <div ref={messagesEndRef} />
       </div>
 
+      {error && <div className="error-message">{error}</div>}
+
       <form className="message-input-form" onSubmit={handleSendMessage}>
         <input
           type="text"
@@ -98,7 +134,11 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
           placeholder="Type your message..."
           className="message-input"
         />
-        <button type="submit" className="send-button">
+        <button 
+          type="submit" 
+          className="send-button"
+          disabled={!newMessage.trim()}
+        >
           Send
         </button>
       </form>

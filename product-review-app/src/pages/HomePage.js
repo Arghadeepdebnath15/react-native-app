@@ -224,10 +224,7 @@ const HomePage = ({ showForm, setShowForm }) => {
           <h1 className="hero-title">Discover Amazing Products</h1>
           <p className="hero-subtitle">Find the best products reviewed by our community</p>
           <div className="hero-actions">
-            <MessageButton 
-              userId="admin" // Replace with actual admin/support user ID
-              userName="Support Team"
-            />
+            <MessageButton />
           </div>
         </div>
       </section>
