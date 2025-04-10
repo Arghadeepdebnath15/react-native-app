@@ -14,8 +14,8 @@ const ChatList = ({ onSelectUser }) => {
   const [showAllUsers, setShowAllUsers] = useState(true);
   const { currentUser } = useAuth();
 
-  const handleSearch = () => {
-    // ... existing code ...
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   useEffect(() => {
@@ -292,7 +292,7 @@ const ChatList = ({ onSelectUser }) => {
             type="text"
             placeholder="Search users..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearch}
             className="search-input"
           />
         </div>
@@ -330,13 +330,13 @@ const ChatList = ({ onSelectUser }) => {
                   className={`user-item ${!user.hasChatted ? 'new-user' : ''}`}
                   onClick={() => handleUserSelect(user.uid)}
                 >
-                  {user.hasChatted && unreadCounts[user.uid] > 0 && (
-                <div className="chat-notification">
-                  New messages from {user.name}!
-                </div>
-              )}
-              <div className="user-avatar">
-                {user.photoURL ? (
+                  {notifications[user.uid] && unreadCounts[user.uid] > 0 && (
+                    <div className="chat-notification">
+                      New messages from {user.name}!
+                    </div>
+                  )}
+                  <div className="user-avatar">
+                    {user.photoURL ? (
                       <img 
                         src={user.photoURL} 
                         alt={`${user.name}'s avatar`}
@@ -348,29 +348,29 @@ const ChatList = ({ onSelectUser }) => {
                           e.target.src = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=200`;
                         }}
                       />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                    ) : (
+                      <div className="avatar-placeholder">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     {user.hasChatted && unreadCounts[user.uid] > 0 && (
-                  <span className="unread-badge">{unreadCounts[user.uid]}</span>
-                )}
-              </div>
-              <div className="user-info">
-                <div className="user-name">{user.name}</div>
-                <div className="user-email">{user.email}</div>
-                <div className="user-role">{user.role}</div>
+                      <span className="unread-badge">{unreadCounts[user.uid]}</span>
+                    )}
+                  </div>
+                  <div className="user-info">
+                    <div className="user-name">{user.name}</div>
+                    <div className="user-email">{user.email}</div>
+                    <div className="user-role">{user.role}</div>
                     {!user.hasChatted && (
                       <div className="new-user-label">New User</div>
                     )}
-              </div>
-              <div className="user-actions">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                </svg>
-              </div>
-            </div>
+                  </div>
+                  <div className="user-actions">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                  </div>
+                </div>
               </React.Fragment>
             );
           })}
