@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, getDocs, orderBy, where, onSnapshot, or } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, where, onSnapshot, or, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import '../styles/ChatList.css';
 import md5 from 'crypto-js/md5';
@@ -103,7 +103,7 @@ const ChatList = ({ _onSelectUser }) => {
         });
 
         // Sort messages by timestamp for each user
-        userMessages.forEach((messages, userId) => {
+        userMessages.forEach((messages, _userId) => {
           messages.sort((a, b) => b.timestamp - a.timestamp);
         });
 
@@ -232,7 +232,43 @@ const ChatList = ({ _onSelectUser }) => {
   }, [searchTerm, users, showAllUsers]);
 
   const handleUserSelect = async (_userId) => {
-    // ... existing code ...
+    try {
+      // Mark messages as read for this specific user only
+      const messagesRef = collection(db, 'messages');
+      const q = query(
+        messagesRef,
+        where('receiverId', '==', currentUser.uid),
+        where('senderId', '==', _userId),
+        where('read', '==', false)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const updatePromises = querySnapshot.docs.map(async (doc) => {
+        await updateDoc(doc.ref, { read: true });
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Update unread counts only for this specific user
+      setUnreadCounts(prev => ({
+        ...prev,
+        [_userId]: 0
+      }));
+      
+      setShowNotifications(prev => ({
+        ...prev,
+        [_userId]: false
+      }));
+      
+      // Pass only this user's messages to the parent component
+      const userMessages = users.find(u => u.uid === _userId)?.messages || [];
+      _onSelectUser({
+        ...users.find(u => u.uid === _userId),
+        messages: userMessages
+      });
+    } catch (error) {
+      console.error('Error handling user selection:', error);
+    }
   };
 
   if (!currentUser) {
