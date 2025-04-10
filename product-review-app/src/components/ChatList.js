@@ -166,24 +166,26 @@ const ChatList = ({ onSelectUser }) => {
 
   // Filter users based on search term and showAllUsers state
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      const filtered = showAllUsers 
-        ? [...users] 
-        : users.filter(user => user.hasChatted);
-      
-      setUsers(filtered);
-      return;
-    }
+    const filterUsers = () => {
+      if (!searchTerm.trim()) {
+        const filtered = showAllUsers 
+          ? [...users] 
+          : users.filter(user => user.hasChatted);
+        
+        return filtered;
+      }
 
-    const searchLower = searchTerm.toLowerCase().trim();
-    const filtered = users.filter(user => {
-      const nameMatch = user.name?.toLowerCase().includes(searchLower);
-      const emailMatch = user.email?.toLowerCase().includes(searchLower);
-      return nameMatch || emailMatch;
-    });
+      const searchLower = searchTerm.toLowerCase().trim();
+      return users.filter(user => {
+        const nameMatch = user.name?.toLowerCase().includes(searchLower);
+        const emailMatch = user.email?.toLowerCase().includes(searchLower);
+        return nameMatch || emailMatch;
+      });
+    };
 
-    setUsers(filtered);
-  }, [searchTerm, showAllUsers]);
+    const filteredUsers = filterUsers();
+    setUsers(filteredUsers);
+  }, [searchTerm, showAllUsers, users]);
 
   const handleUserSelect = async (userId) => {
     try {
