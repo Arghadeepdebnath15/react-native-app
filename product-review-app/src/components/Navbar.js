@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 import { useTheme } from '../context/ThemeContext';
 import { getImageUrl } from '../utils/imageUtils';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserProfile } from '../services/userProfileService';
 import '../styles/Navbar.css';
 
 const Navbar = ({ onAddProductClick }) => {
@@ -15,6 +16,8 @@ const Navbar = ({ onAddProductClick }) => {
   const { toggleTheme } = useTheme();
   const searchRef = useRef(null);
   const { currentUser, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
 
   // Check if we're on the message page or dashboard
   const isMessagePage = location.pathname.includes('/message');
@@ -31,6 +34,21 @@ const Navbar = ({ onAddProductClick }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (currentUser) {
+        try {
+          const userProfile = await getUserProfile(currentUser.uid);
+          setProfile(userProfile);
+        } catch (err) {
+          console.error('Error loading profile:', err);
+        }
+      }
+    };
+
+    loadProfile();
+  }, [currentUser]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -82,6 +100,10 @@ const Navbar = ({ onAddProductClick }) => {
     } catch (error) {
       console.error('Failed to log out:', error);
     }
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
@@ -142,13 +164,21 @@ const Navbar = ({ onAddProductClick }) => {
                 </button>
               )}
               <div className="user-section">
-                <span className="user-email">{currentUser.email}</span>
-                <button 
-                  className="logout-button"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
+                <div className="navbar-profile-section">
+                  <button 
+                    className="logout-button"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                  <Link to="/profile">
+                    <img 
+                      src={profile?.profilePicture || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} 
+                      alt="Profile" 
+                      className="navbar-profile-pic"
+                    />
+                  </Link>
+                </div>
               </div>
             </>
           )}

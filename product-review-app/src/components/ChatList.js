@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, getDocs, orderBy, where, updateDoc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, where, updateDoc, onSnapshot, or } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import '../styles/ChatList.css';
+import md5 from 'crypto-js/md5';
 
 const ChatList = ({ onSelectUser }) => {
   const { currentUser } = useAuth();
@@ -87,44 +88,132 @@ const ChatList = ({ onSelectUser }) => {
 
   useEffect(() => {
     const fetchUsers = async () => {
+      if (!currentUser) return;
+
       try {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, orderBy('lastLogin', 'desc'));
-        const querySnapshot = await getDocs(q);
+        console.log('Current user ID:', currentUser.uid);
         
-        const usersList = [];
-        querySnapshot.forEach((doc) => {
-          const userData = doc.data();
-          if (userData.uid !== currentUser.uid) {
-            usersList.push({
-              id: doc.id,
-              uid: userData.uid,
-              name: userData.name || userData.displayName || 'Anonymous',
-              email: userData.email || '',
-              photoURL: userData.photoURL || userData.avatar || '',
-              lastLogin: userData.lastLogin,
-              role: userData.role || 'user'
-            });
+        // First, get all users you've chatted with from messages collection
+        const messagesRef = collection(db, 'messages');
+        const chatQuery = query(
+          messagesRef,
+          or(
+            where('senderId', '==', currentUser.uid),
+            where('receiverId', '==', currentUser.uid)
+          )
+        );
+
+        const chatSnapshot = await getDocs(chatQuery);
+        const chattedUserIds = new Set();
+        
+        console.log('Found messages:', chatSnapshot.size);
+        
+        chatSnapshot.forEach((doc) => {
+          const message = doc.data();
+          console.log('Message data:', {
+            senderId: message.senderId,
+            receiverId: message.receiverId,
+            currentUser: currentUser.uid
+          });
+          
+          // Add both sender and receiver to the set if they're not the current user
+          if (message.senderId !== currentUser.uid) {
+            chattedUserIds.add(message.senderId);
+          }
+          if (message.receiverId !== currentUser.uid) {
+            chattedUserIds.add(message.receiverId);
           }
         });
+
+        console.log('Users with messages:', Array.from(chattedUserIds));
+
+        // Then get all users
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, orderBy('lastLogin', 'desc'));
         
-        setUsers(usersList);
-        setFilteredUsers(usersList);
-        setLoading(false);
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const usersList = [];
+          querySnapshot.forEach((doc) => {
+            const userData = doc.data();
+            const userId = doc.id; // Get the document ID as the user ID
+            
+            if (userId !== currentUser.uid) {
+              const hasChatted = chattedUserIds.has(userId);
+              
+              console.log('Processing user:', {
+                name: userData.name,
+                uid: userId,
+                hasChatted: hasChatted,
+                inChattedSet: chattedUserIds.has(userId)
+              });
+              
+              // Always add users, but mark if they've chatted
+              const emailHash = userData.email ? 
+                md5(userData.email.toLowerCase().trim()) : 
+                '00000000000000000000000000000000';
+              const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=200`;
+              
+              const isGoogleUser = userData.providerData && 
+                Array.isArray(userData.providerData) && 
+                userData.providerData.some(provider => provider.providerId === 'google.com');
+              
+              const profilePicture = isGoogleUser
+                ? userData.photoURL || gravatarUrl
+                : userData.profilePicture || userData.photoURL || userData.avatar || gravatarUrl;
+              
+              usersList.push({
+                id: doc.id,
+                uid: userId,
+                name: userData.name || userData.displayName || 'Anonymous',
+                email: userData.email || '',
+                photoURL: profilePicture,
+                lastLogin: userData.lastLogin,
+                role: userData.role || 'user',
+                isGoogleUser: isGoogleUser,
+                hasChatted: hasChatted
+              });
+            }
+          });
+          
+          console.log('Total users:', usersList.length);
+          console.log('Users with chats:', usersList.filter(u => u.hasChatted).length);
+          console.log('Users with chats details:', usersList.filter(u => u.hasChatted).map(u => ({ name: u.name, uid: u.uid })));
+          
+          // Sort users to show chatted users first
+          const sortedUsers = usersList.sort((a, b) => {
+            if (a.hasChatted && !b.hasChatted) return -1;
+            if (!a.hasChatted && b.hasChatted) return 1;
+            return 0;
+          });
+          
+          setUsers(sortedUsers);
+          setFilteredUsers(sortedUsers);
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
       } catch (error) {
         console.error('Error fetching users:', error);
         setLoading(false);
       }
     };
 
-    if (currentUser) {
-      fetchUsers();
-    }
+    fetchUsers();
   }, [currentUser]);
 
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredUsers(users);
+      // Show only users with chats when no search term
+      const filtered = users.filter(user => user.hasChatted);
+      
+      // Sort users to show chatted users first
+      const sortedUsers = filtered.sort((a, b) => {
+        if (a.hasChatted && !b.hasChatted) return -1;
+        if (!a.hasChatted && b.hasChatted) return 1;
+        return 0;
+      });
+      
+      setFilteredUsers(sortedUsers);
       return;
     }
 
@@ -150,74 +239,94 @@ const ChatList = ({ onSelectUser }) => {
   return (
     <div className="chat-list-container">
       <div className="chat-list-header">
-        <h3>Chat List</h3>
+        <h2>Messages</h2>
         <div className="search-container">
-          <div className="search-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/>
-            </svg>
-          </div>
           <input
             type="text"
-            placeholder="Search users by name or email..."
+            placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
         </div>
       </div>
-
+      
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading users...</p>
+          <p>Loading conversations...</p>
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="no-users-container">
-          <div className="no-users-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-            </svg>
-          </div>
-          <p>{searchTerm ? 'No users found matching your search' : 'No users found'}</p>
+        <div className="no-conversations">
+          {searchTerm ? (
+            <p>No users found matching your search.</p>
+          ) : (
+            <p>No conversations yet. Start a new conversation by searching for a user.</p>
+          )}
         </div>
       ) : (
-        <div className="users-list">
-          {filteredUsers.map((user) => (
-            <div
-              key={user.id}
-              className="user-item"
-              onClick={() => handleUserSelect(user)}
-            >
-              {showNotifications[user.uid] && (
-                <div className="chat-notification">
-                  New messages from {user.name}!
-                </div>
-              )}
-              <div className="user-avatar">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt={user.name} />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {user.name.charAt(0).toUpperCase()}
+        <div className="user-list">
+          {filteredUsers.map((user, index) => {
+            // Check if this is the first non-chatted user after chatted users
+            const isFirstNonChatted = index > 0 && 
+              !user.hasChatted && 
+              filteredUsers[index - 1].hasChatted;
+            
+            return (
+              <React.Fragment key={user.uid}>
+                {isFirstNonChatted && (
+                  <div className="user-list-divider">
+                    <span>Other Users</span>
                   </div>
                 )}
-                {unreadCounts[user.uid] > 0 && (
-                  <span className="unread-badge">{unreadCounts[user.uid]}</span>
-                )}
-              </div>
-              <div className="user-info">
-                <div className="user-name">{user.name}</div>
-                <div className="user-email">{user.email}</div>
-                <div className="user-role">{user.role}</div>
-              </div>
-              <div className="user-actions">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                </svg>
-              </div>
-            </div>
-          ))}
+                <div
+                  className={`user-item ${!user.hasChatted ? 'new-user' : ''}`}
+                  onClick={() => handleUserSelect(user)}
+                >
+                  {user.hasChatted && unreadCounts[user.uid] > 0 && (
+                    <div className="chat-notification">
+                      New messages from {user.name}!
+                    </div>
+                  )}
+                  <div className="user-avatar">
+                    {user.photoURL ? (
+                      <img 
+                        src={user.photoURL} 
+                        alt={`${user.name}'s avatar`}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          const emailHash = user.email ? 
+                            md5(user.email.toLowerCase().trim()) : 
+                            '00000000000000000000000000000000';
+                          e.target.src = `https://www.gravatar.com/avatar/${emailHash}?d=identicon&s=200`;
+                        }}
+                      />
+                    ) : (
+                      <div className="avatar-placeholder">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    {user.hasChatted && unreadCounts[user.uid] > 0 && (
+                      <span className="unread-badge">{unreadCounts[user.uid]}</span>
+                    )}
+                  </div>
+                  <div className="user-info">
+                    <div className="user-name">{user.name}</div>
+                    <div className="user-email">{user.email}</div>
+                    <div className="user-role">{user.role}</div>
+                    {!user.hasChatted && (
+                      <div className="new-user-label">New User</div>
+                    )}
+                  </div>
+                  <div className="user-actions">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                  </div>
+                </div>
+              </React.Fragment>
+            );
+          })}
         </div>
       )}
     </div>

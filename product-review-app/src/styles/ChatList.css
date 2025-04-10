@@ -1,4 +1,94 @@
 .chat-list-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.chat-list-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chat-list-header h2 {
+  margin: 0 0 1rem 0;
+  color: var(--text-color);
+  font-size: 1.5rem;
+}
+
+.search-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.user-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--card-bg);
+  position: relative;
+}
+
+.user-item:hover {
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+}
+
+.user-item.new-user {
+  opacity: 0.8;
+  border: 1px dashed var(--border-color);
+}
+
+.new-user-label {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  background: rgba(79, 70, 229, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
+}
+
+.no-conversations {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.no-conversations p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.chat-list-container {
   background: white;
   border-radius: 0;
   box-shadow: none;
@@ -26,15 +116,6 @@
   font-weight: 600;
 }
 
-.search-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
 .search-icon {
   position: absolute;
   left: 12px;
@@ -47,24 +128,6 @@
 .search-icon svg {
   width: 20px;
   height: 20px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 12px 12px 12px 40px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #1e293b;
-  background: #f8f9fa;
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #6366F1;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .users-list {
@@ -109,12 +172,20 @@
   overflow: hidden;
   margin-right: 15px;
   flex-shrink: 0;
+  border: 2px solid var(--primary-color);
+  background-color: var(--input-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .user-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.user-avatar:hover img {
+  transform: scale(1.1);
 }
 
 .avatar-placeholder {
@@ -127,6 +198,7 @@
   justify-content: center;
   font-size: 1.2rem;
   font-weight: bold;
+  text-transform: uppercase;
 }
 
 .unread-badge {
@@ -324,4 +396,63 @@
     padding: 4px 8px;
     top: -8px;
   }
+}
+
+.user-list-divider {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.user-list-divider::before,
+.user-list-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+  margin: 0 0.5rem;
+}
+
+[data-theme="dark"] .user-list-divider {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .user-list-divider::before,
+[data-theme="dark"] .user-list-divider::after {
+  border-color: #3d3d3d;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.toggle-users-btn {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-users-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .toggle-users-btn {
+  background: #4f46e5;
+}
+
+[data-theme="dark"] .toggle-users-btn:hover {
+  background: #4338ca;
 } 
