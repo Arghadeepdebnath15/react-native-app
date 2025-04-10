@@ -15,7 +15,6 @@ const Navbar = ({ onAddProductClick }) => {
   const { toggleTheme } = useTheme();
   const searchRef = useRef(null);
   const { currentUser, logout } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Check if we're on the message page or dashboard
   const isMessagePage = location.pathname.includes('/message');
