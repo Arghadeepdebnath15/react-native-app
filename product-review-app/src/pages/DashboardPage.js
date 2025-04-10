@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import MessageButton from '../components/MessageButton';
 import '../styles/DashboardPage.css';
 
 const DashboardPage = () => {
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
-  const [showProducts, setShowProducts] = useState(false);
+  const [recentProducts, setRecentProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const handleViewProducts = () => {
-    setShowProducts(true);
     navigate('/products');
   };
 

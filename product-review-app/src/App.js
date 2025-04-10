@@ -4,7 +4,6 @@ import './App.css';
 import './styles/fixes.css';
 import HomePage from './pages/HomePage';
 import ProductDetailsEnhanced from './pages/ProductDetailsEnhanced';
-import AddProduct from './components/AddProduct';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { ProductProvider } from './context/ProductContext';
