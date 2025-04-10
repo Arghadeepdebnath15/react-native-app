@@ -102,7 +102,7 @@ const Navbar = ({ onAddProductClick }) => {
     }
   };
 
-  const toggleMenu = () => {
+  const _toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 

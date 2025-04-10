@@ -10,7 +10,7 @@ import '../styles/DashboardPage.css';
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
-  const { currentUser } = useAuth();
+  const { _currentUser } = useAuth();
   const [recentProducts, setRecentProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

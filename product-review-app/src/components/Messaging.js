@@ -20,7 +20,7 @@ const Messaging = ({ otherUserId, otherUserName, onClose }) => {
     }
 
     // Set up message listener with proper filtering
-    const unsubscribeMessages = getMessages(currentUser.uid, otherUserId, (newMessages, type) => {
+    const unsubscribeMessages = getMessages(currentUser.uid, otherUserId, (newMessages, _type) => {
       setMessages(prevMessages => {
         // Filter out any messages that don't belong to this conversation
         const filteredMessages = prevMessages.filter(msg => 

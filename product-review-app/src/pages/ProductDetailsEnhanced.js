@@ -7,12 +7,9 @@ import { getImageUrl } from '../utils/imageUtils';
 import SuccessPopup from '../components/SuccessPopup';
 import '../styles/ProductDetailsEnhanced.css';
 
-const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
+const ProductDetailsEnhanced = ({ product, _showForm, _setShowForm }) => {
   const { id } = useParams();
   const { getProduct, submitReview, loading: contextLoading, error } = useContext(ProductContext);
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [submitError, setSubmitError] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -23,13 +20,10 @@ const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        setLoading(true);
         const data = await getProduct(id);
-        setProduct(data);
+        product = data;
       } catch (err) {
         console.error('Error fetching product:', err);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -38,9 +32,6 @@ const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
 
   const handleSubmitReview = async (reviewData) => {
     try {
-      setLoading(true);
-      setSubmitError(null);
-      
       if (!product || !product._id) {
         throw new Error('Cannot submit review - product data is invalid');
       }
@@ -51,7 +42,7 @@ const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
         throw new Error('Received invalid product data from server');
       }
       
-      setProduct(updatedProduct);
+      product = updatedProduct;
       setShowReviewForm(false);
       setSuccessMessage('Review submitted successfully! 🎉');
       setShowSuccess(true);
@@ -64,10 +55,7 @@ const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
       return updatedProduct;
     } catch (err) {
       console.error('Error submitting review:', err);
-      setSubmitError(err.message || 'Failed to submit review. Please try again.');
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -96,7 +84,7 @@ const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
     return stars;
   };
 
-  if (loading || contextLoading) {
+  if (contextLoading) {
     return (
       <div className="container loading-container">
         <div className="loading-spinner"></div>
@@ -251,12 +239,6 @@ const ProductDetailsEnhanced = ({ showForm, setShowForm }) => {
             onReviewSubmitted={handleSubmitReview}
             onCancel={() => setShowReviewForm(false)}
           />
-        )}
-
-        {submitError && (
-          <div className="error-message">
-            {submitError}
-          </div>
         )}
 
         <ReviewList reviews={product.reviews} />

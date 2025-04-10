@@ -12,38 +12,11 @@ const ChatList = ({ onSelectUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const [showNotifications, setShowNotifications] = useState({});
+  const [notifications, setShowNotifications] = useState({});
   const [showAllUsers, setShowAllUsers] = useState(true);
 
-  const markMessagesAsRead = async (senderId) => {
-    try {
-      const messagesRef = collection(db, 'messages');
-      const q = query(
-        messagesRef,
-        where('receiverId', '==', currentUser.uid),
-        where('senderId', '==', senderId),
-        where('read', '==', false)
-      );
-      const querySnapshot = await getDocs(q);
-      
-      const updatePromises = querySnapshot.docs.map(async (doc) => {
-        await updateDoc(doc.ref, { read: true });
-      });
-      
-      await Promise.all(updatePromises);
-      
-      // Update unread counts and notifications
-      setUnreadCounts(prev => ({
-        ...prev,
-        [senderId]: 0
-      }));
-      setShowNotifications(prev => ({
-        ...prev,
-        [senderId]: false
-      }));
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
-    }
+  const handleSearch = () => {
+    // ... existing code ...
   };
 
   useEffect(() => {

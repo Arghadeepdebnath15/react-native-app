@@ -137,7 +137,7 @@ const UserProfile = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const _handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
